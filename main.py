@@ -151,7 +151,7 @@ def logout():
     st.success("You have successfully logged out.")
 
     # Rerun the app to update the state
-    st.experimental_rerun()
+    st.rerun()
 
 def show_industry_dashboard(user_id):
     """Function to display the industry dashboard with industry details."""
