@@ -156,11 +156,12 @@ def logout():
     st.session_state["logged_in"] = False
     st.session_state["user_id"] = None
     st.session_state["current_page"] = "Login"  # Ensure it redirects to the login page
+    refresh_page()
     st.session_state.clear()  # Clear other session variables as well (optional)
 
     # Display a success message
     st.success("You have successfully logged out.")
-    st.rerun
+    
 
 def show_industry_dashboard(user_id):
     """Function to display the industry dashboard with industry details."""
