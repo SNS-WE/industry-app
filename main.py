@@ -433,16 +433,16 @@ def fill_cems_details(user_id):
         make = st.text_input("Make")
         model = st.text_input("Model")
         serial_number = st.text_input("Serial Number")
-        emission_limit = st.number_input("SPCB Approved Emission Limit", value=None, min_value=0.0, format="%.2f")
-        measuring_range_low = st.number_input("Measuring Range (Low)", value=None, min_value=0.0, format="%.2f")
-        measuring_range_high = st.number_input("Measuring Range (High)", value=None, min_value=0.0, format="%.2f")
-        certified = st.selectbox("Is Certified?", ["Yes", "No"])
+        emission_limit = st.number_input("SPCB Approved Emission Limit", min_value=0)
+        measuring_range_low = st.number_input("Measuring Range (Low)", min_value=0)
+        measuring_range_high = st.number_input("Measuring Range (High)", min_value=0)
+        certified = st.selectbox("Is Certified?", ["Yes", "No"], index=None)
         if certified == "Yes":
             certification_agency = st.text_input("Certification Agency")
         else:
             certification_agency = None
-        communication_protocol = st.selectbox("Communication Protocol", ["4-20 mA", "RS-485", "RS-232"])
-        measurement_method = st.selectbox("Measurement Method", ["In-situ", "Extractive"])
+        communication_protocol = st.selectbox("Communication Protocol", ["4-20 mA", "RS-485", "RS-232"], index=None)
+        measurement_method = st.selectbox("Measurement Method", ["In-situ", "Extractive"], index=None)
         technology = st.text_input("Technology")
         connected_bspcb = st.selectbox("Connected to BSPCB?", ["Yes", "No"])
         if connected_bspcb == "Yes":
@@ -507,8 +507,7 @@ def fill_cems_details(user_id):
             st.success(f"CEMS details for {selected_parameter} saved!")
             st.session_state[f"cems_{selected_stack_id}_{selected_parameter}"] = True  # Mark CEMS form as completed for this parameter
             time.sleep(2)
-            refresh_page()
-            # st.rerun()
+            st.rerun()
 
         except Exception as e:
             st.error(f"An error occurred while saving CEMS details: {e}")
