@@ -373,7 +373,6 @@ def fill_stacks(user_id):
             st.success("Stack details saved!")
             st.session_state["current_page"] = f"cems_{current_stack}"  # Move to CEMS details form
             time.sleep(1)
-            st.clear()
             st.rerun()
 
 
