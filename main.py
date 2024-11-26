@@ -94,6 +94,7 @@ def create_database_tables():
                         serial_number TEXT,
                         measuring_range_low REAL,
                         measuring_range_high REAL,
+                        emission_limit REAL,
                         certified TEXT,
                         certification_agency TEXT,
                         communication_protocol TEXT,
@@ -372,7 +373,8 @@ def fill_stacks(user_id):
             st.success("Stack details saved!")
             st.session_state["current_page"] = f"cems_{current_stack}"  # Move to CEMS details form
             time.sleep(1)
-            st.rerun()
+            refresh_page()
+            # st.rerun()
 
 
 def fill_cems_details(user_id):
@@ -432,8 +434,9 @@ def fill_cems_details(user_id):
         make = st.text_input("Make")
         model = st.text_input("Model")
         serial_number = st.text_input("Serial Number")
-        measuring_range_low = st.number_input("Measuring Range (Low)", format="%.2f")
-        measuring_range_high = st.number_input("Measuring Range (High)", format="%.2f")
+        emission_limit = st.number_input("SPCB Approved Emission Limit")
+        measuring_range_low = st.number_input("Measuring Range (Low)", value=None, format="%.2f")
+        measuring_range_high = st.number_input("Measuring Range (High)", value=None, format="%.2f")
         certified = st.selectbox("Is Certified?", ["Yes", "No"])
         if certified == "Yes":
             certification_agency = st.text_input("Certification Agency")
@@ -492,12 +495,12 @@ def fill_cems_details(user_id):
                 # Here, use the stack_id to associate the CEMS data with the correct stack
                 c.execute(""" 
                     INSERT INTO cems_instruments (stack_id, parameter, make, model, serial_number, measuring_range_low,
-                        measuring_range_high, certified, certification_agency, communication_protocol, measurement_method,
+                        measuring_range_high, emission_limit, certified, certification_agency, communication_protocol, measurement_method,
                         technology, connected_bspcb, bspcb_url, cpcb_url, connected_cpcb)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """, (
                     selected_stack_id, selected_parameter, make, model, serial_number, measuring_range_low, measuring_range_high,
-                    certified, certification_agency, communication_protocol, measurement_method, technology,
+                    emission_limit, certified, certification_agency, communication_protocol, measurement_method, technology,
                     bspcb_url, cpcb_url, connected_bspcb, connected_cpcb
                 ))
                 conn.commit()
@@ -505,7 +508,8 @@ def fill_cems_details(user_id):
             st.success(f"CEMS details for {selected_parameter} saved!")
             st.session_state[f"cems_{selected_stack_id}_{selected_parameter}"] = True  # Mark CEMS form as completed for this parameter
             time.sleep(2)
-            st.rerun()
+            refresh_page()
+            # st.rerun()
 
         except Exception as e:
             st.error(f"An error occurred while saving CEMS details: {e}")
