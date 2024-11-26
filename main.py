@@ -433,9 +433,9 @@ def fill_cems_details(user_id):
         make = st.text_input("Make")
         model = st.text_input("Model")
         serial_number = st.text_input("Serial Number")
-        emission_limit = st.number_input("SPCB Approved Emission Limit", min_value=0)
-        measuring_range_low = st.number_input("Measuring Range (Low)", min_value=0)
-        measuring_range_high = st.number_input("Measuring Range (High)", min_value=0)
+        emission_limit = st.number_input("SPCB Approved Emission Limit", min_value=0.0, format="%.2f")
+        measuring_range_low = st.number_input("Measuring Range (Low)", min_value=0.0, format="%.2f")
+        measuring_range_high = st.number_input("Measuring Range (High)", min_value=0.0, format="%.2f")
         certified = st.selectbox("Is Certified?", ["Yes", "No"])
         if certified == "Yes":
             certification_agency = st.text_input("Certification Agency")
