@@ -1,5 +1,3 @@
-import time
-
 import streamlit as st
 import sqlite3
 import hashlib
@@ -68,7 +66,19 @@ def create_database_tables():
                         stack_condition TEXT,
                         stack_shape TEXT,
                         diameter REAL,
+                        length REAL,
+                        width REAL,
+                        stack_material TEXT,
                         stack_height REAL,
+                        platform_height REAL,
+                        platform_approachable TEXT,
+                        approaching_media TEXT,
+                        cems_installed TEXT,
+                        stack_params TEXT,
+                        duct_params TEXT,
+                        follows_formula TEXT,
+                        manual_port_installed TEXT,
+                        cems_below_manual TEXT,
                         parameters TEXT,
                         FOREIGN KEY (user_id) REFERENCES industry (ind_id)
                     )
@@ -90,6 +100,8 @@ def create_database_tables():
                         measurement_method TEXT,
                         technology TEXT,
                         connected_bspcb TEXT,
+                        bspcb_url TEXT,
+                        cpcb_url TEXT,
                         connected_cpcb TEXT,
                         FOREIGN KEY (stack_id) REFERENCES stacks (stack_id)
                     )
@@ -144,14 +156,14 @@ def logout():
     st.session_state["logged_in"] = False
     st.session_state["user_id"] = None
     st.session_state["current_page"] = "Login"  # Ensure it redirects to the login page
-    # refresh_page()
+    refresh_page()
     st.session_state.clear()  # Clear other session variables as well (optional)
 
     # Display a success message
     st.success("You have successfully logged out.")
 
     # Rerun the app to update the state
-    st.rerun()
+    st.experimental_rerun()
 
 def show_industry_dashboard(user_id):
     """Function to display the industry dashboard with industry details."""
@@ -201,32 +213,157 @@ def fill_stacks(user_id):
     st.subheader(f"Enter Details for Stack {current_stack} of {total_stacks}")
 
     if f"stack_{current_stack}" not in st.session_state:
-        with st.form(f"stack_form_{current_stack}") as form:
-            process_attached = st.text_input("Process Attached")
-            apcd_details = st.text_input("APCD Details")
-            latitude = st.number_input("Latitude", format="%.6f")
-            longitude = st.number_input("Longitude", format="%.6f")
-            stack_condition = st.selectbox("Stack Condition", ["Good", "Average", "Poor"])
-            stack_shape = st.selectbox("Stack Shape", ["Circular", "Rectangular", "Square"])
-            diameter = st.number_input("Diameter (in meters)", format="%.2f")
-            stack_height = st.number_input("Stack Height (in meters)", format="%.2f")
-            parameters = st.multiselect("Parameters Monitored", ["PM", "SO2", "NOx", "CO", "O2"])
+        # Simple input fields (without st.form)
+        process_attached = st.text_input("Process Attached")
+        apcd_details = st.text_input("APCD Details")
+        latitude = st.number_input(
+            "Latitude", value=None, min_value=24.33611111, max_value=27.52083333, format="%.6f"
+        )
+        longitude = st.number_input(
+            "Longitude", value=None, min_value=83.33055556, max_value=88.29444444, format="%.6f"
+        )
+        stack_condition = st.selectbox("Stack Condition", ["Wet", "Dry"])
+        stack_shape = st.selectbox(
+            "Is it a Circular Stack/Rectangular Stack", ["Circular", "Rectangular"]
+        )
+        if stack_shape == "Circular":
+            diameter = st.number_input("Diameter (in meters)", min_value=0.0, format="%.2f")
+            length, width = None, None
+        else:
+            length = st.number_input("Length (in meters)", value=None, min_value=0.0, format="%.2f")
+            width = st.number_input("Width (in meters)", value= None, min_value=0.0, format="%.2f")
+            diameter = None
+        stack_material = st.text_input("Stack Construction Material")
+        stack_height = st.number_input(
+            "Stack Height (in meters)", value=None, min_value=0.0, format="%.2f"
+        )
+        platform_height = st.number_input(
+            "Platform for Manual Monitoring location height from Ground level(in meters)",
+            value=None, min_value=0.0, format="%.2f"
+        )
+        if stack_height is not None and platform_height is not None:
+            if platform_height >= stack_height:
+                st.error(
+                    "Kindly enter valid details. Platform height cannot be greater than or equal to stack height.",
+                    icon="🚨"
+                )
+        platform_approachable = st.selectbox(
+            "Is Platform approachable?", ["Yes", "No"]
+        )
+        if platform_approachable == "Yes":
+            approaching_media = st.selectbox(
+                "Choose one", ["Ladder", "Lift", "Staircase"]
+            )
+        else:
+            approaching_media = None
+            st.error(
+                "Platform must be approachable, Follow CPCB Guidelines"
+            )
+        cems_installed = st.selectbox(
+            "Where is CEMS Installed?", ["Stack/Chimney", "Duct", "Both"]
+        )
+        if cems_installed == "Both":
+            stack_params = st.multiselect(
+                "Parameters Monitored in Stack",
+                ["PM", "SOx", "NOx", "CO", "O2", "NH3", "HCL", "Total Fluoride", "HF", "Hg", "H2S" "CL2"]
+            )
+            duct_params = st.multiselect(
+                "Parameters Monitored in Duct",
+                ["PM", "SOx", "NOx", "CO", "O2", "NH3", "HCL", "Total Fluoride", "HF", "Hg", "H2S" "CL2"]
+            )
+        else:
+            stack_params = None # Ensure it is always a list
+            duct_params = None
 
-            submit_stack = st.form_submit_button("Submit Stack Details")
+        # Check if stack_params is not None and is a list
+        if stack_params and isinstance(stack_params, list):
+            stack_params = ",".join(stack_params)  # Safely join list items into a string
+        else:
+            stack_params = None  # Fallback in case of no parameters selected or invalid data
 
-        if submit_stack:
+        # Check if stack_params is not None and is a list
+        if duct_params and isinstance(duct_params, list):
+            duct_params = ",".join(duct_params)  # Safely join list items into a string
+        else:
+            duct_params = None # Fallback in case of no parameters selected or invalid data
+
+        if stack_shape == "Circular":
+            follows_formula = st.selectbox(
+                "Does the Installation follows 8D/2D formula?", ["Yes", "No"]
+            )
+        else:
+            follows_formula = st.selectbox(
+                "Does the Installation follows (2LW/L+W) criteria (Rectangular)?", ["Yes", "No"]
+            )
+
+        if cems_installed in ["Duct", "Both"]:
+            manual_port_installed = st.selectbox(
+                "Has a Manual Monitoring Port been installed in the duct?", ["Yes", "No"]
+            )
+            if manual_port_installed == "No":
+                st.write("Please, Refer CPCB Guidelines")
+        else:
+            manual_port_installed = None
+
+        cems_below_manual = st.selectbox(
+            "Is CEMS Installation point at least 500mm below the Manual monitoring point? ", ["Yes", "No"]
+        )
+        if cems_below_manual == "No":
+            st.write("Please, Refer CPCB Guidelines")
+
+        parameters = st.multiselect(
+            "Parameters Monitored",
+            ["PM", "SOx", "NOx", "CO", "O2", "NH3", "HCL", "Total Fluoride", "HF", "Hg", "H2S" "CL2", "others"]
+        )
+
+        # Submit button
+        if st.button("Submit Stack Details"):
+            # Collecting all mandatory fields into a list for easy checking
+            mandatory_fields = [
+                process_attached, apcd_details, latitude, longitude, stack_condition, stack_shape,
+                stack_material, stack_height, platform_height, platform_approachable,
+                cems_installed, follows_formula, cems_below_manual
+            ]
+
+            # Additional conditional fields (check based on shape or type)
+            if stack_shape == "Circular":
+                mandatory_fields.append(diameter)
+            else:
+                mandatory_fields.extend([length, width])
+
+            if cems_installed == "Both":
+                mandatory_fields.extend([stack_params, duct_params])
+            elif cems_installed == "Duct":
+                mandatory_fields.append(duct_params)
+
+            if platform_approachable == "Yes":
+                mandatory_fields.append(approaching_media)
+
+            # Check if any mandatory field is empty
+            if any(field is None or field == "" or field == [] for field in mandatory_fields):
+                st.error("All fields are mandatory. Please fill in all required fields.")
+                return
+
             if not parameters:
                 st.error("Please select at least one parameter.")
                 return
+            else:
+                st.success("Stack details submitted successfully!")
 
             with get_database_connection() as conn:
                 c = conn.cursor()
                 c.execute(""" 
                     INSERT INTO stacks (user_id, process_attached, apcd_details, latitude, longitude, stack_condition,
-                                        stack_shape, diameter, stack_height, parameters)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""", (
+                                        stack_shape, diameter, length, width, stack_material, stack_height, 
+                                        platform_height, platform_approachable, approaching_media, cems_installed,
+                                        stack_params, duct_params, follows_formula, manual_port_installed, 
+                                        cems_below_manual, parameters)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""", (
                     f'ind_{user_id}', process_attached, apcd_details, latitude, longitude, stack_condition,
-                    stack_shape, diameter, stack_height, ",".join(parameters)
+                    stack_shape, diameter, length, width, stack_material, stack_height, platform_height,
+                    platform_approachable, approaching_media, cems_installed, stack_params,
+                    duct_params, follows_formula, manual_port_installed, cems_below_manual,
+                    ",".join(parameters)
                 ))
                 stack_id = c.lastrowid
                 conn.commit()
@@ -300,17 +437,37 @@ def fill_cems_details(user_id):
         measuring_range_low = st.number_input("Measuring Range (Low)", format="%.2f")
         measuring_range_high = st.number_input("Measuring Range (High)", format="%.2f")
         certified = st.selectbox("Is Certified?", ["Yes", "No"])
-        certification_agency = st.text_input("Certification Agency")
-        communication_protocol = st.text_input("Communication Protocol")
-        measurement_method = st.text_input("Measurement Method")
+        if certified == "Yes":
+            certification_agency = st.text_input("Certification Agency")
+        else:
+            certification_agency = None
+        communication_protocol = st.selectbox("Communication Protocol", ["4-20 mA", "RS-485", "RS-232"])
+        measurement_method = st.selectbox("Measurement Method", ["In-situ", "Extractive"])
         technology = st.text_input("Technology")
-        connected_bspcb = st.text_input("Connected to BSPCB?")
-        connected_cpcb = st.text_input("Connected to CPCB?")
+        connected_bspcb = st.selectbox("Connected to BSPCB?", ["Yes", "No"])
+        if connected_bspcb == "Yes":
+            bspcb_url = st.text_input("BSPCB URL")
+        else:
+            bspcb_url = None
+        connected_cpcb = st.selectbox("Connected to CPCB?", ["Yes", "No"])
+        if connected_cpcb == "Yes":
+            cpcb_url = st.text_input("CPCB URL")
+        else:
+            cpcb_url = None
 
         submit_cems = st.form_submit_button("Submit CEMS Details")
 
+
+
     if submit_cems:
         # Debugging: Check the collected data
+        if not (
+                make and model and serial_number and measuring_range_low and measuring_range_high and certified and
+                communication_protocol and measurement_method and technology and connected_bspcb and connected_cpcb):
+            st.error("All fields are mandatory. Please fill in all fields.")
+            return
+
+
         st.write("CEMS Form Submitted:", {
             "user_id": user_id,
             "process_attached": selected_process,
@@ -338,12 +495,12 @@ def fill_cems_details(user_id):
                 c.execute(""" 
                     INSERT INTO cems_instruments (stack_id, parameter, make, model, serial_number, measuring_range_low,
                         measuring_range_high, certified, certification_agency, communication_protocol, measurement_method,
-                        technology, connected_bspcb, connected_cpcb)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                        technology, connected_bspcb, bspcb_url, cpcb_url, connected_cpcb)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """, (
                     selected_stack_id, selected_parameter, make, model, serial_number, measuring_range_low, measuring_range_high,
                     certified, certification_agency, communication_protocol, measurement_method, technology,
-                    connected_bspcb, connected_cpcb
+                    bspcb_url, cpcb_url, connected_bspcb, connected_cpcb
                 ))
                 conn.commit()
 
