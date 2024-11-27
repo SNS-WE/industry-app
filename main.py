@@ -109,6 +109,7 @@ def create_database_tables():
                 ''')  # Keep the existing table creation code as is
         conn.commit()
 
+
 category = ["Aluminium", "Cement", "Chlor Alkali", "Copper", "Distillery", "Dye & Dye Intermediates", "Fertilizer",
             "Iron & Steel", "Oil Refinery", "Pesticides", "Petrochemical", "Pharmaceuticals", "Power Plant",
             "Pulp And Paper", "Sugar", "Tannery", "Zinc", "CETP", "STP", "Slaughter House", "Textile",
@@ -123,10 +124,13 @@ dist = ["Araria", "Arwal", "Aurangabad", "Banka", "Begusarai", "Bhagalpur", "Bho
         "Nawada", "Pashchim Champaran", "Patna", "Purbi Champaran", "Purnia", "Rohtas", "Saharsa",
         "Samastipur", "Saran", "Sheikhpura", "Sheohar", "Sitamarhi", "Siwan", "Supaul", "Vaishali"]
 
+
 def refresh_page():
     st.markdown("""
         <meta http-equiv="refresh" content="2">
         """, unsafe_allow_html=True)
+
+
 def sidebar_forms(user_id):
     """Function to render the sidebar after login."""
     st.sidebar.title("Navigation")
@@ -151,6 +155,7 @@ def sidebar_forms(user_id):
         # st.session_state["user_id"] = None
         # st.experimental_rerun() # Rerun to reflect the logged-out state
 
+
 def logout():
     """Function to log out the user and reset session state."""
     # Reset session state
@@ -162,7 +167,7 @@ def logout():
 
     # Display a success message
     st.success("You have successfully logged out.")
-    
+
 
 def show_industry_dashboard(user_id):
     """Function to display the industry dashboard with industry details."""
@@ -190,7 +195,6 @@ def show_industry_dashboard(user_id):
         st.write(f"**Industry Representative Email:** {industry_details[13]}")
     else:
         st.error("Industry details not found. Please ensure the industry is registered.")
-
 
 
 def fill_stacks(user_id):
@@ -230,7 +234,7 @@ def fill_stacks(user_id):
             length, width = None, None
         else:
             length = st.number_input("Length (in meters)", value=None, min_value=0.0, format="%.2f")
-            width = st.number_input("Width (in meters)", value= None, min_value=0.0, format="%.2f")
+            width = st.number_input("Width (in meters)", value=None, min_value=0.0, format="%.2f")
             diameter = None
         stack_material = st.text_input("Stack Construction Material")
         stack_height = st.number_input(
@@ -271,7 +275,7 @@ def fill_stacks(user_id):
                 ["PM", "SOx", "NOx", "CO", "O2", "NH3", "HCL", "Total Fluoride", "HF", "Hg", "H2S" "CL2"]
             )
         else:
-            stack_params = None # Ensure it is always a list
+            stack_params = None  # Ensure it is always a list
             duct_params = None
 
         # Check if stack_params is not None and is a list
@@ -284,7 +288,7 @@ def fill_stacks(user_id):
         if duct_params and isinstance(duct_params, list):
             duct_params = ",".join(duct_params)  # Safely join list items into a string
         else:
-            duct_params = None # Fallback in case of no parameters selected or invalid data
+            duct_params = None  # Fallback in case of no parameters selected or invalid data
 
         if stack_shape == "Circular":
             follows_formula = st.selectbox(
@@ -419,7 +423,8 @@ def fill_cems_details(user_id):
         filled_parameters = c.fetchall()
 
     filled_parameter_names = [param[0] for param in filled_parameters]  # List of filled parameter names
-    available_parameters = [param.strip() for param in available_parameters if param.strip() not in filled_parameter_names]
+    available_parameters = [param.strip() for param in available_parameters if
+                            param.strip() not in filled_parameter_names]
 
     if not available_parameters:
         st.warning(f"All parameters for the stack with process '{selected_process}' have already been filled.")
@@ -433,9 +438,9 @@ def fill_cems_details(user_id):
         make = st.text_input("Make")
         model = st.text_input("Model")
         serial_number = st.text_input("Serial Number")
-        emission_limit = st.number_input("SPCB Approved Emission Limit", min_value=0.0, format="%.2f")
-        measuring_range_low = st.number_input("Measuring Range (Low)", min_value=0.0, format="%.2f")
-        measuring_range_high = st.number_input("Measuring Range (High)", min_value=0.0, format="%.2f")
+        emission_limit = st.number_input("SPCB Approved Emission Limit", min_value=0, value=0)
+        measuring_range_low = st.number_input("Measuring Range (Low)", min_value=0, value=0)
+        measuring_range_high = st.number_input("Measuring Range (High)", min_value=0, value=0)
         certified = st.selectbox("Is Certified?", ["Yes", "No"])
         if certified == "Yes":
             certification_agency = st.text_input("Certification Agency")
@@ -457,16 +462,36 @@ def fill_cems_details(user_id):
 
         submit_cems = st.form_submit_button("Submit CEMS Details")
 
-
-
     if submit_cems:
         # Debugging: Check the collected data
-        if not (
-                make and model and serial_number and measuring_range_low and measuring_range_high and certified and
-                communication_protocol and measurement_method and technology and connected_bspcb and connected_cpcb):
+        if not all([make, model, serial_number, communication_protocol, measurement_method, technology]):
             st.error("All fields are mandatory. Please fill in all fields.")
-            return
+            st.stop()
 
+        # Check for numeric fields: Handle 0.0 as valid input
+        if emission_limit is None or measuring_range_low is None or measuring_range_high is None:
+            st.error("Numeric fields must have valid values.")
+            st.stop()
+
+        if measuring_range_low >= measuring_range_high:
+            st.error("Measuring Range (Low) must be less than Measuring Range (High).")
+            st.stop()
+
+        # Check if certification is required
+        if certified == "Yes" and not certification_agency:
+            st.error("Kindly fill the Certification Agency name.")
+            st.stop()
+
+        # Validate URLs if needed
+        if connected_bspcb == "Yes" and not bspcb_url:
+            st.error("Kindly fill the BSPCB URL.")
+            st.stop()
+
+        if connected_cpcb == "Yes" and not cpcb_url:
+            st.error("Kindly fill the CPCB URL.")
+            st.stop()
+
+        st.success("CEMS Details submitted successfully!")
 
         st.write("CEMS Form Submitted:", {
             "user_id": user_id,
@@ -493,19 +518,20 @@ def fill_cems_details(user_id):
 
                 # Here, use the stack_id to associate the CEMS data with the correct stack
                 c.execute(""" 
-                    INSERT INTO cems_instruments (stack_id, parameter, make, model, serial_number, measuring_range_low,
-                        measuring_range_high, emission_limit, certified, certification_agency, communication_protocol, measurement_method,
-                        technology, connected_bspcb, bspcb_url, cpcb_url, connected_cpcb)
+                    INSERT INTO cems_instruments (stack_id, parameter, make, model, serial_number, emission_limit, 
+                    measuring_range_low, measuring_range_high, certified, certification_agency, communication_protocol, 
+                    measurement_method, technology, connected_bspcb, bspcb_url, cpcb_url, connected_cpcb)
                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """, (
-                    selected_stack_id, selected_parameter, make, model, serial_number, measuring_range_low, measuring_range_high,
-                    emission_limit, certified, certification_agency, communication_protocol, measurement_method, technology,
-                    bspcb_url, cpcb_url, connected_bspcb, connected_cpcb
+                    selected_stack_id, selected_parameter, make, model, serial_number, measuring_range_low,
+                    emission_limit, measuring_range_high, certified, certification_agency, communication_protocol,
+                    measurement_method, technology, bspcb_url, cpcb_url, connected_bspcb, connected_cpcb
                 ))
                 conn.commit()
 
             st.success(f"CEMS details for {selected_parameter} saved!")
-            st.session_state[f"cems_{selected_stack_id}_{selected_parameter}"] = True  # Mark CEMS form as completed for this parameter
+            st.session_state[
+                f"cems_{selected_stack_id}_{selected_parameter}"] = True  # Mark CEMS form as completed for this parameter
             time.sleep(2)
             st.rerun()
 
@@ -516,7 +542,8 @@ def fill_cems_details(user_id):
 # Main Function
 def main():
     """Main application logic."""
-    st.title("🌳 Industry Registration Portal")
+    st.image("logo3.jpg")
+    st.title("Industry Registration Portal")
     create_database_tables()
 
     if "logged_in" not in st.session_state:
@@ -524,7 +551,7 @@ def main():
         st.session_state["user_id"] = None
 
     if not st.session_state["logged_in"]:
-        st.header("Please log in or register to continue.")
+        # st.header("Please log in or register to continue.")
         menu = ["Register Industry", "Login"]
         choice = st.sidebar.selectbox("Menu", menu)
 
@@ -593,6 +620,7 @@ def main():
                     st.error("This email is already registered. Please use a different email.")
                 except Exception as e:
                     st.error(f"An error occurred: {e}")  # Encapsulate registration logic
+
 
         elif choice == "Login":
             st.subheader("Login")
