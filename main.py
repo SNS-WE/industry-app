@@ -464,6 +464,14 @@ def fill_cems_details(user_id):
 
     if submit_cems:
         # Debugging: Check the collected data
+        # if not (
+        #         make and model and serial_number and emission_limit and measuring_range_low and measuring_range_high
+        #         and certified and communication_protocol and measurement_method and technology and connected_bspcb
+        #         and connected_cpcb):
+        #     st.error("All fields are mandatory. Please fill in all fields.")
+        #     return
+
+
         if not all([make, model, serial_number, communication_protocol, measurement_method, technology]):
             st.error("All fields are mandatory. Please fill in all fields.")
             st.stop()
