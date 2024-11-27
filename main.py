@@ -434,7 +434,7 @@ def fill_cems_details(user_id):
     selected_parameter = st.selectbox("Select Parameter", options=available_parameters)
 
     # Form for entering CEMS details
-    with st.form(f"cems_form_{selected_stack_id}") as form:
+    with st.form(f"cems_form_{selected_stack_id}", clear_on_submit=True) as form:
         make = st.text_input("Make")
         model = st.text_input("Model")
         serial_number = st.text_input("Serial Number")
@@ -541,6 +541,7 @@ def fill_cems_details(user_id):
             st.session_state[
                 f"cems_{selected_stack_id}_{selected_parameter}"] = True  # Mark CEMS form as completed for this parameter
             time.sleep(2)
+
             st.rerun()
 
         except Exception as e:
