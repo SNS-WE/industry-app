@@ -637,7 +637,7 @@ def main():
                                 return "State OCMMS ID already exists."     
                         return None  # Both are unique
                 # Example during registration:
-                error_message = is_email_and_ocmms_unique(user_email, state_ocmms_id)
+                error_message = is_email_and_ocmms_unique(email, state_ocmms_id)
                 if error_message:
                     st.error(error_message)
 
