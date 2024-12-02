@@ -1,5 +1,6 @@
 import streamlit as st
 import sqlite3
+import sqlitecloud
 import hashlib
 import re
 import time
@@ -19,8 +20,12 @@ def is_valid_email(email):
 
 def get_database_connection():
     """Returns a database connection."""
-    return sqlite3.connect("industry_registration.db")
-
+    conn = sqlitecloud.connect(
+        "sqlitecloud://cqssetgvhz.sqlite.cloud:8860/industry_registration?apikey=v1hNkVAkbMH6JLN7FSU71ARA3aaEodfbuxJ9Cl9HbVQ"
+    )
+    conn.execute("PRAGMA foreign_keys = ON;")
+      # Explicitly enable foreign keys
+    return conn
 
 def create_database_tables():
     """Creates the required database tables if not already present."""
@@ -38,7 +43,8 @@ def create_database_tables():
         c.execute('''
                     CREATE TABLE IF NOT EXISTS industry (
                         ind_id INTEGER PRIMARY KEY AUTOINCREMENT,
-                        user_id TEXT UNIQUE,
+                        user_id INTEGER UNIQUE,
+                        user_id_ind TEXT UNIQUE,
                         industry_category TEXT,
                         state_ocmms_id TEXT,
                         industry_name TEXT,
@@ -51,6 +57,7 @@ def create_database_tables():
                         industry_instrument_head TEXT,
                         concerned_person_cems TEXT,
                         industry_representative_email TEXT,
+                        completed_stacks INTEGER DEFAULT 0,
                         FOREIGN KEY (user_id) REFERENCES user (id)
                     )
                 ''')
@@ -58,7 +65,8 @@ def create_database_tables():
         c.execute('''
                     CREATE TABLE IF NOT EXISTS stacks (
                         stack_id INTEGER PRIMARY KEY AUTOINCREMENT,
-                        user_id TEXT,
+                        user_id INTEGER,
+                        user_id_ind TEXT,
                         process_attached TEXT,
                         apcd_details TEXT,
                         latitude REAL,
@@ -176,23 +184,23 @@ def show_industry_dashboard(user_id):
     # Retrieve the industry details from the database
     with get_database_connection() as conn:
         c = conn.cursor()
-        c.execute("SELECT * FROM industry WHERE user_id = ?", (f'ind_{user_id}',))
+        c.execute("SELECT * FROM industry WHERE user_id = ?", (user_id,))
         industry_details = c.fetchone()
 
     if industry_details:
         # Display the details of the industry
-        st.write(f"**Industry Category:** {industry_details[2]}")
-        st.write(f"**State OCMMS ID:** {industry_details[3]}")
-        st.write(f"**Industry Name:** {industry_details[4]}")
-        st.write(f"**Address:** {industry_details[5]}")
-        st.write(f"**State:** {industry_details[6]}")
-        st.write(f"**District:** {industry_details[7]}")
-        st.write(f"**Production Capacity:** {industry_details[8]}")
-        st.write(f"**Number of Stacks:** {industry_details[9]}")
-        st.write(f"**Environment Head:** {industry_details[10]}")
-        st.write(f"**Instrument Head:** {industry_details[11]}")
-        st.write(f"**Concerned Person for CEMS:** {industry_details[12]}")
-        st.write(f"**Industry Representative Email:** {industry_details[13]}")
+        st.write(f"**Industry Category:** {industry_details[3]}")
+        st.write(f"**State OCMMS ID:** {industry_details[4]}")
+        st.write(f"**Industry Name:** {industry_details[5]}")
+        st.write(f"**Address:** {industry_details[6]}")
+        st.write(f"**State:** {industry_details[7]}")
+        st.write(f"**District:** {industry_details[8]}")
+        st.write(f"**Production Capacity:** {industry_details[9]}")
+        st.write(f"**Number of Stacks:** {industry_details[10]}")
+        st.write(f"**Environment Head:** {industry_details[11]}")
+        st.write(f"**Instrument Head:** {industry_details[12]}")
+        st.write(f"**Concerned Person for CEMS:** {industry_details[13]}")
+        st.write(f"**Industry Representative Email:** {industry_details[14]}")
     else:
         st.error("Industry details not found. Please ensure the industry is registered.")
 
@@ -201,11 +209,23 @@ def fill_stacks(user_id):
     """Form to fill stack details."""
     with get_database_connection() as conn:
         c = conn.cursor()
-        c.execute("SELECT num_stacks FROM industry WHERE user_id = ?", (f'ind_{user_id}',))
+        c.execute("SELECT num_stacks FROM industry WHERE user_id = ?", (user_id,))
         total_stacks = c.fetchone()[0]
+        # st.write(total_stacks)
+        conn.commit()
 
-        c.execute("SELECT COUNT(*) FROM stacks WHERE user_id = ?", (f'ind_{user_id}',))
-        completed_stacks = c.fetchone()[0]
+        c = conn.cursor()
+        c.execute("SELECT COUNT(*) FROM stacks WHERE user_id = ?", (user_id,))
+        result = c.fetchone()
+        # st.write(result)
+        completed_stacks = result[0] if result else 0  # Default to 0 if no stacks are completed
+        conn.commit()
+
+        # c = conn.cursor()
+        # c.execute("SELECT completed_stacks FROM industry WHERE user_id = ?", (user_id,))
+        # completed_stacks = c.fetchone()[0]
+        # st.write(completed_stacks)
+        # conn.commit()
 
         if completed_stacks >= total_stacks:
             st.success("All stack details are completed.")
@@ -236,7 +256,8 @@ def fill_stacks(user_id):
             length = st.number_input("Length (in meters)", value=None, min_value=0.0, format="%.2f")
             width = st.number_input("Width (in meters)", value=None, min_value=0.0, format="%.2f")
             diameter = None
-        stack_material = st.text_input("Stack Construction Material")
+        stack_material = st.text_input("Stack Construction Material"
+                                       )
         stack_height = st.number_input(
             "Stack Height (in meters)", value=None, min_value=0.0, format="%.2f"
         )
@@ -268,11 +289,11 @@ def fill_stacks(user_id):
         if cems_installed == "Both":
             stack_params = st.multiselect(
                 "Parameters Monitored in Stack",
-                ["PM", "SOx", "NOx", "CO", "O2", "NH3", "HCL", "Total Fluoride", "HF", "Hg", "H2S" "CL2"]
+                ["PM", "SO2", "NOx", "CO", "O2", "NH3", "HCL", "Total Fluoride", "HF", "Hg", "H2S", "CL2"]
             )
             duct_params = st.multiselect(
                 "Parameters Monitored in Duct",
-                ["PM", "SOx", "NOx", "CO", "O2", "NH3", "HCL", "Total Fluoride", "HF", "Hg", "H2S" "CL2"]
+                ["PM", "SO2", "NOx", "CO", "O2", "NH3", "HCL", "Total Fluoride", "HF", "Hg", "H2S", "CL2"]
             )
         else:
             stack_params = None  # Ensure it is always a list
@@ -316,7 +337,7 @@ def fill_stacks(user_id):
 
         parameters = st.multiselect(
             "Parameters Monitored",
-            ["PM", "SOx", "NOx", "CO", "O2", "NH3", "HCL", "Total Fluoride", "HF", "Hg", "H2S" "CL2", "others"]
+            ["PM", "SO2", "NOx", "CO", "O2", "NH3", "HCL", "Total Fluoride", "HF", "Hg", "H2S", "CL2", "others"],
         )
 
         # Submit button
@@ -356,13 +377,13 @@ def fill_stacks(user_id):
             with get_database_connection() as conn:
                 c = conn.cursor()
                 c.execute(""" 
-                    INSERT INTO stacks (user_id, process_attached, apcd_details, latitude, longitude, stack_condition,
+                    INSERT INTO stacks (user_id, user_id_ind, process_attached, apcd_details, latitude, longitude, stack_condition,
                                         stack_shape, diameter, length, width, stack_material, stack_height, 
                                         platform_height, platform_approachable, approaching_media, cems_installed,
                                         stack_params, duct_params, follows_formula, manual_port_installed, 
                                         cems_below_manual, parameters)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""", (
-                    f'ind_{user_id}', process_attached, apcd_details, latitude, longitude, stack_condition,
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""", (
+                    user_id, f'ind{user_id}', process_attached, apcd_details, latitude, longitude, stack_condition,
                     stack_shape, diameter, length, width, stack_material, stack_height, platform_height,
                     platform_approachable, approaching_media, cems_installed, stack_params,
                     duct_params, follows_formula, manual_port_installed, cems_below_manual,
@@ -371,12 +392,19 @@ def fill_stacks(user_id):
                 stack_id = c.lastrowid
                 conn.commit()
 
+                # Increment the completed_stacks counter
+                c.execute("""
+                        UPDATE industry
+                        SET completed_stacks = completed_stacks + 1
+                        WHERE user_id = ?
+                    """, (user_id,))
+                conn.commit()
+
             # Save stack state in session
             st.session_state[f"stack_{current_stack}"] = True
             st.session_state["parameters"] = parameters  # Store parameters for CEMS form
             st.success("Stack details saved!")
             st.session_state["current_page"] = f"cems_{current_stack}"  # Move to CEMS details form
-            time.sleep(1)
             st.rerun()
 
 
@@ -387,7 +415,7 @@ def fill_cems_details(user_id):
     # Retrieve stack details from the session or database
     with get_database_connection() as conn:
         c = conn.cursor()
-        c.execute("SELECT stack_id, process_attached, parameters FROM stacks WHERE user_id = ?", (f'ind_{user_id}',))
+        c.execute("SELECT stack_id, process_attached, parameters FROM stacks WHERE user_id = ?", (user_id,))
         stack_details = c.fetchall()
 
     if not stack_details:
@@ -433,8 +461,13 @@ def fill_cems_details(user_id):
     # Dropdown to select parameter (filter out already filled ones)
     selected_parameter = st.selectbox("Select Parameter", options=available_parameters)
 
+    # Initialize session state to track form reset
+    if f"form_reset_{selected_stack_id}" not in st.session_state:
+        st.session_state[f"form_reset_{selected_stack_id}"] = False
+
+
     # Form for entering CEMS details
-    with st.form(f"cems_form_{selected_stack_id}", clear_on_submit=True) as form:
+    with st.form(f"cems_form_{selected_stack_id}", clear_on_submit=st.session_state[f"form_reset_{selected_stack_id}"]) as form:
         make = st.text_input("Make")
         model = st.text_input("Model")
         serial_number = st.text_input("Serial Number")
@@ -474,30 +507,30 @@ def fill_cems_details(user_id):
 
         if not all([make, model, serial_number, communication_protocol, measurement_method, technology]):
             st.error("All fields are mandatory. Please fill in all fields.")
-            st.stop()
+            return
 
         # Check for numeric fields: Handle 0.0 as valid input
         if emission_limit is None or measuring_range_low is None or measuring_range_high is None:
             st.error("Numeric fields must have valid values.")
-            st.stop()
+            return
 
         if measuring_range_low >= measuring_range_high:
             st.error("Measuring Range (Low) must be less than Measuring Range (High).")
-            st.stop()
+            return
 
         # Check if certification is required
         if certified == "Yes" and not certification_agency:
             st.error("Kindly fill the Certification Agency name.")
-            st.stop()
+            return
 
         # Validate URLs if needed
         if connected_bspcb == "Yes" and not bspcb_url:
             st.error("Kindly fill the BSPCB URL.")
-            st.stop()
+            return
 
         if connected_cpcb == "Yes" and not cpcb_url:
             st.error("Kindly fill the CPCB URL.")
-            st.stop()
+            return
 
         st.success("CEMS Details submitted successfully!")
 
@@ -538,15 +571,15 @@ def fill_cems_details(user_id):
                 conn.commit()
 
             st.success(f"CEMS details for {selected_parameter} saved!")
-            st.session_state[
-                f"cems_{selected_stack_id}_{selected_parameter}"] = True  # Mark CEMS form as completed for this parameter
+            st.session_state[f"cems_{selected_stack_id}_{selected_parameter}"] = True  # Mark CEMS form as completed for this parameter
+            st.session_state[f"form_reset_{selected_stack_id}"] = True # Allow form reset
             time.sleep(2)
 
             st.rerun()
 
         except Exception as e:
             st.error(f"An error occurred while saving CEMS details: {e}")
-
+            st.session_state[f"form_reset_{selected_stack_id}"] = False  # Prevent reset on error
 
 # Main Function
 def main():
@@ -610,14 +643,15 @@ def main():
                     hashed_password = hash_password(password)
                     c.execute("INSERT INTO user (email, password) VALUES (?, ?)", (email, hashed_password))
                     user_id = c.lastrowid
+                    conn.commit()
                     user_id_str = f"ind_{user_id}"  # Format user_id like 'ind_1', 'ind_2', etc.
 
                     # Insert industry
-                    c.execute('''INSERT INTO industry (user_id, industry_category, state_ocmms_id, industry_name, address,
+                    c.execute('''INSERT INTO industry (user_id, formatted_user_id, industry_category, state_ocmms_id, industry_name, address,
                                                                         state, district, production_capacity, num_stacks, industry_environment_head,
                                                                         industry_instrument_head, concerned_person_cems, industry_representative_email)
-                                                                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)''',
-                              (user_id_str, industry_category, state_ocmms_id, industry_name, address, state,
+                                                                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)''',
+                              (user_id, user_id_str, industry_category, state_ocmms_id, industry_name, address, state,
                                district, production_capacity, num_stacks, industry_environment_head,
                                industry_instrument_head,
                                concerned_person_cems, email))
@@ -629,7 +663,6 @@ def main():
                     st.error("This email is already registered. Please use a different email.")
                 except Exception as e:
                     st.error(f"An error occurred: {e}")  # Encapsulate registration logic
-
 
         elif choice == "Login":
             st.subheader("Login")
