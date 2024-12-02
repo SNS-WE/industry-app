@@ -641,36 +641,36 @@ def main():
                 error_message = is_email_and_ocmms_unique(email, state_ocmms_id)
                 if error_message:
                     st.error(error_message)
-
-                # Save data to the database
-                try:
-                    conn = get_database_connection()
-                    c = conn.cursor()
-
-                    # Insert user (with email used for login)
-                    hashed_password = hash_password(password)
-                    c.execute("INSERT INTO user (email, password) VALUES (?, ?)", (email, hashed_password))
-                    user_id = c.lastrowid
-                    conn.commit()
-                    user_id_str = f"ind_{user_id}"  # Format user_id like 'ind_1', 'ind_2', etc.
-
-                    # Insert industry
-                    c.execute('''INSERT INTO industry (user_id, user_id_ind, industry_category, state_ocmms_id, industry_name, address,
-                                                                        state, district, production_capacity, num_stacks, industry_environment_head,
-                                                                        industry_instrument_head, concerned_person_cems, industry_representative_email)
-                                                                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)''',
-                              (user_id, user_id_str, industry_category, state_ocmms_id, industry_name, address, state,
-                               district, production_capacity, num_stacks, industry_environment_head,
-                               industry_instrument_head,
-                               concerned_person_cems, email))
-                    conn.commit()
-                    conn.close()
-
-                    st.success("Industry registered successfully!")
-                except sqlite3.IntegrityError:
-                    st.error("This email is already registered. Please use a different email.")
-                except Exception as e:
-                    st.write()  # Encapsulate registration logic
+                else:
+                    # Save data to the database
+                    try:
+                        conn = get_database_connection()
+                        c = conn.cursor()
+    
+                        # Insert user (with email used for login)
+                        hashed_password = hash_password(password)
+                        c.execute("INSERT INTO user (email, password) VALUES (?, ?)", (email, hashed_password))
+                        user_id = c.lastrowid
+                        conn.commit()
+                        user_id_str = f"ind_{user_id}"  # Format user_id like 'ind_1', 'ind_2', etc.
+    
+                        # Insert industry
+                        c.execute('''INSERT INTO industry (user_id, user_id_ind, industry_category, state_ocmms_id, industry_name, address,
+                                                                            state, district, production_capacity, num_stacks, industry_environment_head,
+                                                                            industry_instrument_head, concerned_person_cems, industry_representative_email)
+                                                                            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)''',
+                                  (user_id, user_id_str, industry_category, state_ocmms_id, industry_name, address, state,
+                                   district, production_capacity, num_stacks, industry_environment_head,
+                                   industry_instrument_head,
+                                   concerned_person_cems, email))
+                        conn.commit()
+                        conn.close()
+    
+                        st.success("Industry registered successfully!")
+                    except sqlite3.IntegrityError:
+                        st.error("This email is already registered. Please use a different email.")
+                    except Exception as e:
+                        st.write()  # Encapsulate registration logic
 
         elif choice == "Login":
             st.subheader("Login")
