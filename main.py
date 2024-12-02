@@ -624,6 +624,22 @@ def main():
                 if not is_valid_email(email):
                     st.error("Please enter a valid email address.")
                     return
+                def is_email_and_ocmms_unique(email, state_ocmms_id):
+                        with get_database_connection() as conn:
+                            c = conn.cursor()
+                            # Check email uniqueness
+                            c.execute("SELECT COUNT(*) FROM user WHERE email = ?", (email,))
+                            if c.fetchone()[0] > 0:
+                                return "Email already exists."
+                            # Check state_ocmms_id uniqueness
+                            c.execute("SELECT COUNT(*) FROM industry WHERE state_ocmms_id = ?", (state_ocmms_id,))
+                            if c.fetchone()[0] > 0:
+                                return "State OCMMS ID already exists."     
+                        return None  # Both are unique
+                # Example during registration:
+                error_message = is_email_and_ocmms_unique(user_email, state_ocmms_id)
+                if error_message:
+                    st.error(error_message)
 
                 # Save data to the database
                 try:
