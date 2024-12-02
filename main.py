@@ -383,7 +383,7 @@ def fill_stacks(user_id):
                                         stack_params, duct_params, follows_formula, manual_port_installed, 
                                         cems_below_manual, parameters)
                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""", (
-                    user_id, f'ind{user_id}', process_attached, apcd_details, latitude, longitude, stack_condition,
+                    user_id, f'ind_{user_id}', process_attached, apcd_details, latitude, longitude, stack_condition,
                     stack_shape, diameter, length, width, stack_material, stack_height, platform_height,
                     platform_approachable, approaching_media, cems_installed, stack_params,
                     duct_params, follows_formula, manual_port_installed, cems_below_manual,
