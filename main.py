@@ -670,7 +670,7 @@ def main():
                 except sqlite3.IntegrityError:
                     st.error("This email is already registered. Please use a different email.")
                 except Exception as e:
-                    st.error(f"")  # Encapsulate registration logic
+                    st.write()  # Encapsulate registration logic
 
         elif choice == "Login":
             st.subheader("Login")
