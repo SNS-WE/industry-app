@@ -651,9 +651,9 @@ def main():
 
                     st.success("Industry registered successfully!")
                 except sqlite3.IntegrityError as e:
-                    if 'UNIQUE constraint failed: user.email' in str(e):
+                    if 'UNIQUE constraint failed: industry.state_ocmms_id' in str(e):
                         st.error("The email you entered is already registered. Please use a different email.")
-                    elif 'UNIQUE constraint failed: industry.state_ocmms_id' in str(e):
+                    elif 'UNIQUE constraint failed: user.email' in str(e):
                         st.error("This State OCMMS Id you entered is already registered.")
                     else:
                         st.error(f"An error occurred: {e}")  # Encapsulate registration logic
