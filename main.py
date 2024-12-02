@@ -631,6 +631,7 @@ def main():
                             c.execute("SELECT COUNT(*) FROM user WHERE email = ?", (email,))
                             if c.fetchone()[0] > 0:
                                 return "Email already exists."
+                            c = conn.cursor()
                             # Check state_ocmms_id uniqueness
                             c.execute("SELECT COUNT(*) FROM industry WHERE state_ocmms_id = ?", (state_ocmms_id,))
                             if c.fetchone()[0] > 0:
