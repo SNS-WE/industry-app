@@ -496,15 +496,6 @@ def fill_cems_details(user_id):
         submit_cems = st.form_submit_button("Submit CEMS Details")
 
     if submit_cems:
-        # Debugging: Check the collected data
-        # if not (
-        #         make and model and serial_number and emission_limit and measuring_range_low and measuring_range_high
-        #         and certified and communication_protocol and measurement_method and technology and connected_bspcb
-        #         and connected_cpcb):
-        #     st.error("All fields are mandatory. Please fill in all fields.")
-        #     return
-
-
         if not all([make, model, serial_number, communication_protocol, measurement_method, technology]):
             st.error("All fields are mandatory. Please fill in all fields.")
             return
@@ -569,11 +560,11 @@ def fill_cems_details(user_id):
                     measurement_method, technology, bspcb_url, cpcb_url, connected_bspcb, connected_cpcb
                 ))
                 conn.commit()
+                st.session_state[f"form_reset_{selected_stack_id}"] = True # Allow form reset
 
             st.success(f"CEMS details for {selected_parameter} saved!")
             st.session_state[f"cems_{selected_stack_id}_{selected_parameter}"] = True  # Mark CEMS form as completed for this parameter
-            st.session_state[f"form_reset_{selected_stack_id}"] = True # Allow form reset
-            time.sleep(2)
+            
 
             st.rerun()
 
