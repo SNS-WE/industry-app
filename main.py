@@ -661,8 +661,8 @@ def main():
                     st.success("Industry registered successfully!")
                 except sqlite3.IntegrityError:
                     st.error("This email is already registered. Please use a different email.")
-                except Exception as e:
-                    st.error(f"An error occurred: {e}")  # Encapsulate registration logic
+                # except Exception as e:
+                #     st.error(f"An error occurred: {e}")  # Encapsulate registration logic
 
         elif choice == "Login":
             st.subheader("Login")
