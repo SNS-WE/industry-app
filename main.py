@@ -46,7 +46,7 @@ def create_database_tables():
                         user_id INTEGER UNIQUE,
                         user_id_ind TEXT UNIQUE,
                         industry_category TEXT,
-                        state_ocmms_id TEXT,
+                        state_ocmms_id TEXT UNIQUE,
                         industry_name TEXT,
                         address TEXT,
                         state TEXT,
@@ -650,10 +650,13 @@ def main():
                     conn.close()
 
                     st.success("Industry registered successfully!")
-                except sqlite3.IntegrityError:
-                    st.error("This email is already registered. Please use a different email.")
-                except Exception as e:
-                    st.error(f"An error occurred: {e}")  # Encapsulate registration logic
+                except sqlite3.IntegrityError as e:
+                    if 'UNIQUE constraint failed: user.email' in str(e):
+                        st.error("The email you entered is already registered. Please use a different email.")
+                    elif 'UNIQUE constraint failed: industry.state_ocmms_id' in str(e):
+                        st.error("This State OCMMS Id you entered is already registered.")
+                    else:
+                        st.error(f"An error occurred: {e}")  # Encapsulate registration logic
 
         elif choice == "Login":
             st.subheader("Login")
