@@ -647,7 +647,7 @@ def main():
                     user_id_str = f"ind_{user_id}"  # Format user_id like 'ind_1', 'ind_2', etc.
 
                     # Insert industry
-                    c.execute('''INSERT INTO industry (user_id, formatted_user_id, industry_category, state_ocmms_id, industry_name, address,
+                    c.execute('''INSERT INTO industry (user_id, user_id_ind, industry_category, state_ocmms_id, industry_name, address,
                                                                         state, district, production_capacity, num_stacks, industry_environment_head,
                                                                         industry_instrument_head, concerned_person_cems, industry_representative_email)
                                                                         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)''',
