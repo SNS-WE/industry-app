@@ -575,7 +575,7 @@ def fill_cems_details(user_id):
 # Main Function
 def main():
     """Main application logic."""
-    st.image("logo3.jpg")
+    # st.image("logo3.jpg")
     st.title("Industry Registration Portal")
     create_database_tables()
 
