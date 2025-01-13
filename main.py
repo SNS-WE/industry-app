@@ -402,7 +402,7 @@ def show_industry_dashboard(user_id):
             if cems_data is not None:
                 cems_for_stack = cems_data[cems_data['stack_id'] == stack['stack_id']]
             st.markdown("##### Parameter Details")
-            if not cems_for stack.empty:
+            if not cems_for_stack.empty:
                 for j, cems in cems_for_stack.iterrows():
                     table_param = {
                         "Parameter": cems['parameter'],
