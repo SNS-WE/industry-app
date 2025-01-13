@@ -246,18 +246,17 @@ def show_industry_details(ind_id):
 
 def main():
 """Main application."""
-    query_params = st.experimental_get_query_params()
-    page = query_params.get("page", ["home"])[0]  # Default to "home" if no page is specified
-
-    if page == "home":
-        st.title("Industry Dashboard")
-        display_all_details()
-    elif page == "details":
-        ind_id = query_params.get("ind_id", [None])[0]
-        if ind_id:
-            show_industry_details(ind_id)
-        else:
-            st.warning("No industry ID provided.")
+query_params = st.experimental_get_query_params()
+page = query_params.get("page", ["home"])[0]  # Default to "home" if no page is specified
+if page == "home":
+    st.title("Industry Dashboard")
+    display_all_details()
+elif page == "details":
+    ind_id = query_params.get("ind_id", [None])[0]
+    if ind_id:
+        show_industry_details(ind_id)
+    else:
+        st.warning("No industry ID provided.")
 
 
 # # Display all user-filled details for the admin
