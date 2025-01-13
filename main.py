@@ -997,7 +997,7 @@ def main():
     # st.title("Industry Registration Portal")
     create_database_tables()
     if "selected_ind_id" not in st.session_state:
-    st.session_state["selected_ind_id"] = None
+        st.session_state["selected_ind_id"] = None
     
     # Initialize session state
     if "admin_logged_in" not in st.session_state:
