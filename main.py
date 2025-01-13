@@ -230,7 +230,7 @@ def display_all_details():
             df = pd.DataFrame(industries, columns=[col[0] for col in c.description])
             ind_df = df[['state_ocmms_id', 'industry_name', 'industry_category', 'address', 'district',
                          'production_capacity', 'num_stacks', 'industry_environment_head',
-                         'concerned_person_cems', 'industry_representative_email']]
+                         'concerned_person_cems', 'industry_representative_email', 'ind_id']]
 
             # Search functionality
             search_term = st.text_input("Search Industry", "")
@@ -265,11 +265,13 @@ def display_all_details():
                 with col4:
                     st.markdown(f"{row['production_capacity']}")
                 with col5:
-                    for index, row in df.iterrows():
-                        if st.button(f"View {row['industry_name']}", key=f"view_{row['ind_id']}"):
-                            # Store the selected industry ID in session state
-                            st.session_state["selected_ind_id"] = row["ind_id"]
-                            st.rerun()  # Refresh the page to load the details
+                    # Add a "View" button in the last column, using ind_id as the key
+                    if st.button(f"View {row['industry_name']}", key=f"view_{row['ind_id']}"):
+                        # Store both the ind_id and state_ocmms_id in session state
+                        st.session_state["selected_ind_id"] = row["ind_id"]
+                        st.session_state["selected_state_ocmms_id"] = row["state_ocmms_id"]
+                        st.rerun()  # Refresh the page to load the details
+
         else:
             st.warning("No industry details found.")
 
