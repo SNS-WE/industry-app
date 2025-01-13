@@ -206,70 +206,106 @@ def admin_dashboard():
 
     # Display all user-filled industry details
     display_all_details()
-
-# Display all user-filled details for the admin
+    
 def display_all_details():
     st.subheader("All User-Filled Industry Details")
+    if "selected_ind_id" not in st.session_state:
+        st.session_state["selected_ind_id"] = None
+
     with get_database_connection() as conn:
         c = conn.cursor()
         c.execute("SELECT * FROM industry")
         industries = c.fetchall()
+
         if industries:
-            # Create a DataFrame for better visualization
             df = pd.DataFrame(industries, columns=[col[0] for col in c.description])
-            ind_df = df[['state_ocmms_id','industry_name', 'industry_category','address','district',
-                         'production_capacity','num_stacks','industry_environment_head','concerned_person_cems',
-                         'industry_representative_email']]
 
+            for index, row in df.iterrows():
+                if st.button(f"View {row['industry_name']}", key=f"view_{row['ind_id']}"):
+                    st.session_state["selected_ind_id"] = row["ind_id"]
 
-            # Search functionality
-            search_term = st.text_input("Search Industry", "")
-            if search_term:
-                df = df[df['industry_name'].str.contains(search_term, case=False, na=False)]
-            col1,col2 = st.columns([6,1])
-            # Display the DataFrame without the Action column first
-            with col1:
-                st.dataframe(ind_df,column_config={
-                    'state_ocmms_id':'State OCMMS Code',
-                    'industry_category': 'Category',
-                    'industry_name' : 'Industry Name',
-                    'address':'Address',
-                    'district':'District',
-                    'state':'State',
-                    'production_capacity':'Production Capacity',
-                    'num_stacks':'Number of stacks',
-                    'industry_environment_head':'Industry Environment Head',
-                    'industry_instrument_head':'Instrument Head',
-                    'concerned_person_cems':'Concerned Person for CEMS',
-                    'industry_representative_email':'Industry Representative Email Id'
-                }, hide_index=True)  # Replace with actual column names
-            with col2:
-                # Add a "View" button for each industry
-                for index, row in df.iterrows():
-                    if st.button(f"View {row['industry_name']}", key=f"view_{row['ind_id']}"):
-                        show_industry_details(row['ind_id'])  # Call function to show details for the selected industry
-        else:
-            st.warning("No industry details found.")
-            
+    # Show details if an industry is selected
+    if st.session_state["selected_ind_id"]:
+        show_industry_details(st.session_state["selected_ind_id"])
+
 def show_industry_details(ind_id):
-    """Show detailed information for the selected industry."""
     st.subheader(f"Details for Industry ID: {ind_id}")
     with get_database_connection() as conn:
         c = conn.cursor()
-
-        # Fetch industry details
         c.execute("SELECT * FROM industry WHERE ind_id = ?", (ind_id,))
         industry_details = c.fetchone()
 
         if industry_details:
-            # Convert details to a dictionary for display
             industry_dict = {desc[0]: value for desc, value in zip(c.description, industry_details)}
-
-            # Display the details in a readable format
             for key, value in industry_dict.items():
                 st.markdown(f"**{key.replace('_', ' ').capitalize()}:** {value}")
         else:
             st.warning("No details found for the selected industry.")
+
+
+# # Display all user-filled details for the admin
+# def display_all_details():
+#     st.subheader("All User-Filled Industry Details")
+#     with get_database_connection() as conn:
+#         c = conn.cursor()
+#         c.execute("SELECT * FROM industry")
+#         industries = c.fetchall()
+#         if industries:
+#             # Create a DataFrame for better visualization
+#             df = pd.DataFrame(industries, columns=[col[0] for col in c.description])
+#             ind_df = df[['state_ocmms_id','industry_name', 'industry_category','address','district',
+#                          'production_capacity','num_stacks','industry_environment_head','concerned_person_cems',
+#                          'industry_representative_email']]
+
+
+#             # Search functionality
+#             search_term = st.text_input("Search Industry", "")
+#             if search_term:
+#                 df = df[df['industry_name'].str.contains(search_term, case=False, na=False)]
+#             col1,col2 = st.columns([6,1])
+#             # Display the DataFrame without the Action column first
+#             with col1:
+#                 st.dataframe(ind_df,column_config={
+#                     'state_ocmms_id':'State OCMMS Code',
+#                     'industry_category': 'Category',
+#                     'industry_name' : 'Industry Name',
+#                     'address':'Address',
+#                     'district':'District',
+#                     'state':'State',
+#                     'production_capacity':'Production Capacity',
+#                     'num_stacks':'Number of stacks',
+#                     'industry_environment_head':'Industry Environment Head',
+#                     'industry_instrument_head':'Instrument Head',
+#                     'concerned_person_cems':'Concerned Person for CEMS',
+#                     'industry_representative_email':'Industry Representative Email Id'
+#                 }, hide_index=True)  # Replace with actual column names
+#             with col2:
+#                 # Add a "View" button for each industry
+#                 for index, row in df.iterrows():
+#                     if st.button(f"View {row['industry_name']}", key=f"view_{row['ind_id']}"):
+#                         show_industry_details(row['ind_id'])  # Call function to show details for the selected industry
+#         else:
+#             st.warning("No industry details found.")
+            
+# def show_industry_details(ind_id):
+#     """Show detailed information for the selected industry."""
+#     st.subheader(f"Details for Industry ID: {ind_id}")
+#     with get_database_connection() as conn:
+#         c = conn.cursor()
+
+#         # Fetch industry details
+#         c.execute("SELECT * FROM industry WHERE ind_id = ?", (ind_id,))
+#         industry_details = c.fetchone()
+
+#         if industry_details:
+#             # Convert details to a dictionary for display
+#             industry_dict = {desc[0]: value for desc, value in zip(c.description, industry_details)}
+
+#             # Display the details in a readable format
+#             for key, value in industry_dict.items():
+#                 st.markdown(f"**{key.replace('_', ' ').capitalize()}:** {value}")
+#         else:
+#             st.warning("No details found for the selected industry.")
 
 def logout():
     """Function to log out the user and reset session state."""
