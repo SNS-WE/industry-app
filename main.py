@@ -39,6 +39,14 @@ def create_database_tables():
                         password TEXT
                     )
                 ''')
+        # Admin table for admin login
+        c.execute('''
+                    CREATE TABLE IF NOT EXISTS admin (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        username TEXT UNIQUE,
+                        password TEXT
+                    )
+                ''')
         # Industry Table
         c.execute('''
                     CREATE TABLE IF NOT EXISTS industry (
@@ -88,6 +96,8 @@ def create_database_tables():
                         manual_port_installed TEXT,
                         cems_below_manual TEXT,
                         parameters TEXT,
+                        number_params INTEGER DEFAULT 0,
+                        completed_parameters INTEGER DEFAULT 0,
                         FOREIGN KEY (user_id) REFERENCES industry (ind_id)
                     )
                 ''')
@@ -96,6 +106,7 @@ def create_database_tables():
                     CREATE TABLE IF NOT EXISTS cems_instruments (
                         cems_id INTEGER PRIMARY KEY AUTOINCREMENT,
                         stack_id INTEGER,
+                        user_id_ind TEXT,
                         parameter TEXT,
                         make TEXT,
                         model TEXT,
@@ -138,6 +149,7 @@ def refresh_page():
         <meta http-equiv="refresh" content="2">
         """, unsafe_allow_html=True)
 
+st.set_page_config(layout="wide")
 
 def sidebar_forms(user_id):
     """Function to render the sidebar after login."""
@@ -163,6 +175,333 @@ def sidebar_forms(user_id):
         # st.session_state["user_id"] = None
         # st.experimental_rerun() # Rerun to reflect the logged-out state
 
+# Add an admin user (only needed once)
+def add_admin_user():
+    with get_database_connection() as conn:
+        c = conn.cursor()
+        hashed_password = hash_password("admin@#123")  # Replace with your desired admin password
+        try:
+            c.execute("INSERT INTO admin (username, password) VALUES (?, ?)", ("admin", hashed_password))
+            conn.commit()
+        except sqlite3.IntegrityError:
+            pass  # Admin already exists
+
+# Admin login page
+def admin_login_page():
+    st.subheader("Admin Login")
+    username = st.text_input("Username", key="admin_username")
+    password = st.text_input("Password", type="password", key="admin_password")
+    login_button = st.button("Login as Admin")
+
+    if login_button:
+        with get_database_connection() as conn:
+            c = conn.cursor()
+            c.execute("SELECT password FROM admin WHERE username = ?", (username,))
+            admin = c.fetchone()
+            if admin and hash_password(password) == admin[0]:
+                st.success("Admin login successful!")
+                st.session_state["admin_logged_in"] = True
+                st.rerun()  # Redirect to refresh the session
+            else:
+                st.error("Invalid admin credentials.")
+
+
+def admin_dashboard():
+    st.subheader("Admin Dashboard")
+
+    # Logout button
+    if st.sidebar.button("Logout", key="admin_logout"):
+        st.session_state["admin_logged_in"] = False
+        st.experimental_rerun()  # Redirect back to login
+
+    # Display all user-filled industry details
+    display_all_details()
+
+# Display all user-filled details for the admin
+def display_all_details():
+    st.subheader("All User-Filled Industry Details")
+    with get_database_connection() as conn:
+        c = conn.cursor()
+        c.execute("SELECT * FROM industry")
+        industries = c.fetchall()
+        if industries:
+            # Create a DataFrame for better visualization
+            df = pd.DataFrame(industries, columns=[col[0] for col in c.description])
+            ind_df = df[['state_ocmms_id','industry_name', 'industry_category','address','district',
+                         'production_capacity','num_stacks','industry_environment_head','concerned_person_cems',
+                         'industry_representative_email']]
+
+
+            # Search functionality
+            search_term = st.text_input("Search Industry", "")
+            if search_term:
+                df = df[df['industry_name'].str.contains(search_term, case=False, na=False)]
+            col1,col2 = st.columns([6,1])
+            # Display the DataFrame without the Action column first
+            with col1:
+                st.dataframe(ind_df,column_config={
+                    'state_ocmms_id':'State OCMMS Code',
+                    'industry_category': 'Category',
+                    'industry_name' : 'Industry Name',
+                    'address':'Address',
+                    'district':'District',
+                    'state':'State',
+                    'production_capacity':'Production Capacity',
+                    'num_stacks':'Number of stacks',
+                    'industry_environment_head':'Industry Environment Head',
+                    'industry_instrument_head':'Instrument Head',
+                    'concerned_person_cems':'Concerned Person for CEMS',
+                    'industry_representative_email':'Industry Representative Email Id'
+                }, hide_index=True)  # Replace with actual column names
+            with col2:
+                # Add a "View" button for each industry
+                for index, row in df.iterrows():
+                    if st.button(f"View {row['industry_name']}", key=f"view_{row['ind_id']}"):
+                        show_industry_details(row['ind_id'])  # Call function to show details for the selected industry
+        else:
+            st.warning("No industry details found.")
+# def display_all_details():
+#     st.subheader("All User-Filled Industry Details")
+#     with get_database_connection() as conn:
+#         c = conn.cursor()
+#         try:
+#             c.execute("SELECT * FROM industry")
+#             industries = c.fetchall()
+#
+#             if industries:
+#                 # Create a DataFrame for visualization
+#                 columns = [col[0] for col in c.description]
+#                 df = pd.DataFrame(industries, columns=columns)
+#
+#                 # Filtered DataFrame for display
+#                 ind_df = df[
+#                     ['state_ocmms_id', 'industry_name', 'industry_category', 'district']
+#                 ]
+#
+#                 # Search functionality
+#                 search_term = st.text_input("Search Industry", "").strip()
+#                 if search_term:
+#                     ind_df = ind_df[ind_df['industry_name'].str.contains(search_term, case=False, na=False)]
+#
+#                 # Generate an HTML table with buttons
+#                 if not ind_df.empty:
+#                     html_table = generate_html_table(ind_df)
+#
+#                     # Display the HTML table
+#                     st.markdown(html_table, unsafe_allow_html=True)
+#                 else:
+#                     st.warning("No industries match your search.")
+#             else:
+#                 st.warning("No industry details found.")
+#         except Exception as e:
+#             st.error(f"Error loading data: {e}")
+#
+# def generate_html_table(df):
+#     """Generate an HTML table with a 'View Industry' button for each row."""
+#     table_html = """
+#     <style>
+#         table {
+#             width: 100%;
+#             border-collapse: collapse;
+#         }
+#         th, td {
+#             border: 1px solid #ddd;
+#             padding: 8px;
+#             text-align: left;
+#         }
+#         th {
+#             background-color: #f4f4f4;
+#         }
+#         tr:nth-child(even) {
+#             background-color: #f9f9f9;
+#         }
+#         tr:hover {
+#             background-color: #f1f1f1;
+#         }
+#         button {
+#             background-color: #4CAF50;
+#             color: white;
+#             border: none;
+#             padding: 5px 10px;
+#             cursor: pointer;
+#         }
+#         button:hover {
+#             background-color: #45a049;
+#         }
+#     </style>
+#     <table>
+#         <thead>
+#             <tr>
+#                 <th>State OCMMS Code</th>
+#                 <th>Industry Name</th>
+#                 <th>Category</th>
+#                 <th>District</th>
+#                 <th>View</th>
+#             </tr>
+#         </thead>
+#         <tbody>
+#     """
+#
+#     # Iterate through rows to build table rows
+#     for _, row in df.iterrows():
+#         table_html += f"""
+#         <tr>
+#             <td>{row['state_ocmms_id']}</td>
+#             <td>{row['industry_name']}</td>
+#             <td>{row['industry_category']}</td>
+#             <td>{row['district']}</td>
+#             <td>
+#                 <form action="" method="get">
+#                     <button type="submit" name="view_industry" value="{row['state_ocmms_id']}">View Industry</button>
+#                 </form>
+#             </td>
+#         </tr>
+#         """
+#
+#     table_html += """
+#         </tbody>
+#     </table>
+#     """
+#     return table_html
+# def display_all_details():
+#     st.subheader("All User-Filled Industry Details")
+#     with get_database_connection() as conn:
+#         c = conn.cursor()
+#         try:
+#             c.execute("SELECT * FROM industry")
+#             industries = c.fetchall()
+#
+#             if industries:
+#                 columns = [col[0] for col in c.description]
+#                 df = pd.DataFrame(industries, columns=columns)
+#
+#                 ind_df = df[['state_ocmms_id', 'industry_name', 'industry_category', 'district']]
+#
+#                 search_term = st.text_input("Search Industry", "").strip()
+#                 if search_term:
+#                     ind_df = ind_df[ind_df['industry_name'].str.contains(search_term, case=False, na=False)]
+#
+#                 if not ind_df.empty:
+#                     table_html = generate_html_table(ind_df)
+#                     st.markdown(table_html, unsafe_allow_html=True)
+#                 else:
+#                     st.warning("No industries match your search.")
+#             else:
+#                 st.warning("No industry details found.")
+#         except Exception as e:
+#             st.error(f"Error loading data: {e}")
+#
+# def generate_html_table(df):
+#     """Generate an HTML table with a 'View Industry' button for each row."""
+#     table_html = """
+#     <style>
+#         table {
+#             width: 100%;
+#             border-collapse: collapse;
+#         }
+#         th, td {
+#             border: 1px solid #ddd;
+#             padding: 8px;
+#             text-align: left;
+#         }
+#         th {
+#             background-color: #f4f4f4;
+#         }
+#         tr:nth-child(even) {
+#             background-color: #f9f9f9;
+#         }
+#         tr:hover {
+#             background-color: #f1f1f1;
+#         }
+#         button {
+#             background-color: #4CAF50;
+#             color: white;
+#             border: none;
+#             padding: 5px 10px;
+#             cursor: pointer;
+#         }
+#         button:hover {
+#             background-color: #45a049;
+#         }
+#     </style>
+#     <table>
+#         <thead>
+#             <tr>
+#                 <th>State OCMMS Code</th>
+#                 <th>Industry Name</th>
+#                 <th>Category</th>
+#                 <th>District</th>
+#                 <th>View</th>
+#             </tr>
+#         </thead>
+#         <tbody>
+#     """
+#
+#     for _, row in df.iterrows():
+#         table_html += f"""
+#         <tr>
+#             <td>{row['state_ocmms_id']}</td>
+#             <td>{row['industry_name']}</td>
+#             <td>{row['industry_category']}</td>
+#             <td>{row['district']}</td>
+#             <td>
+#                 <form action="" method="get">
+#                     <button type="submit" name="view_industry" value="{row['state_ocmms_id']}">View Industry</button>
+#                 </form>
+#             </td>
+#         </tr>
+#         """
+#
+#     table_html += """
+#         </tbody>
+#     </table>
+#     """
+#     return table_html
+#
+# # Action handler for the "View Industry" button
+# def handle_view_industry():
+#     query_params = st.experimental_get_query_params()
+#     if "view_industry" in query_params:
+#         industry_id = query_params["view_industry"][0]
+#         show_industry_details(industry_id)
+#
+# def show_industry_details(industry_id):
+#     """Show detailed information for the selected industry."""
+#     st.subheader(f"Details for Industry ID: {industry_id}")
+#
+#     with get_database_connection() as conn:
+#         c = conn.cursor()
+#
+#         # Fetch industry details
+#         c.execute("SELECT * FROM industry WHERE ind_id = ?", (industry_id,))
+#         industry_details = c.fetchone()
+#
+#         if industry_details:
+#             # Display industry details
+#             industry_df = pd.DataFrame([industry_details], columns=[col[0] for col in c.description])
+#             st.dataframe(industry_df)
+#
+#             # Fetch stack details
+#             c.execute("SELECT * FROM stacks WHERE user_id_ind = ?", (f'ind_{industry_id}',))
+#             stack_details = c.fetchall()
+#             if stack_details:
+#                 stack_df = pd.DataFrame(stack_details, columns=[col[0] for col in c.description])
+#                 st.subheader("Stack Details")
+#                 st.dataframe(stack_df)
+#             else:
+#                 st.warning("No stack details found for this industry.")
+#
+#             # Fetch CEMS details
+#             c.execute("SELECT * FROM cems_instruments WHERE user_id_ind = ?", (f'ind_{industry_id}',))
+#             cems_details = c.fetchall()
+#             if cems_details:
+#                 cems_df = pd.DataFrame(cems_details, columns=[col[0] for col in c.description])
+#                 st.subheader("CEMS Details")
+#                 st.dataframe(cems_df)
+#             else:
+#                 st.warning("No CEMS details found for this industry.")
+#         else:
+#             st.warning("No details found for this industry.")
 
 def logout():
     """Function to log out the user and reset session state."""
@@ -179,30 +518,208 @@ def logout():
 
 def show_industry_dashboard(user_id):
     """Function to display the industry dashboard with industry details."""
-    st.subheader("Industry Dashboard")
+    # st.subheader("Industry Dashboard")
+    st.markdown("<h1 style='text-align: center; color: black;'>Industry Dashboard</h1>", unsafe_allow_html=True)
 
-    # Retrieve the industry details from the database
-    with get_database_connection() as conn:
-        c = conn.cursor()
-        c.execute("SELECT * FROM industry WHERE user_id = ?", (user_id,))
-        industry_details = c.fetchone()
+    def fetch_data(query, params=None):
+        """Fetch data from the database."""
+        with get_database_connection() as conn:
+            c = conn.cursor()
+            c.execute(query, params or ())
+            data = c.fetchall()
+            columns = [desc[0] for desc in c.description]  # Extract column names
+            return pd.DataFrame(data, columns=columns) if data else None
 
-    if industry_details:
-        # Display the details of the industry
-        st.write(f"**Industry Category:** {industry_details[3]}")
-        st.write(f"**State OCMMS ID:** {industry_details[4]}")
-        st.write(f"**Industry Name:** {industry_details[5]}")
-        st.write(f"**Address:** {industry_details[6]}")
-        st.write(f"**State:** {industry_details[7]}")
-        st.write(f"**District:** {industry_details[8]}")
-        st.write(f"**Production Capacity:** {industry_details[9]}")
-        st.write(f"**Number of Stacks:** {industry_details[10]}")
-        st.write(f"**Environment Head:** {industry_details[11]}")
-        st.write(f"**Instrument Head:** {industry_details[12]}")
-        st.write(f"**Concerned Person for CEMS:** {industry_details[13]}")
-        st.write(f"**Industry Representative Email:** {industry_details[14]}")
+    # Fetch Industry Details
+    industry_query = "SELECT * FROM industry WHERE user_id = ?"
+    industry_data = fetch_data(industry_query, (user_id,))
+
+    # Fetch Stack Details
+    stack_query = "SELECT * FROM stacks WHERE user_id = ?"
+    stack_data = fetch_data(stack_query, (user_id,))
+    #
+    # Fetch CEMS Details
+    cems_query = "SELECT * FROM cems_instruments WHERE user_id_ind = ?"
+    cems_data = fetch_data(cems_query, (f"ind_{user_id}",))
+
+    # Display Industry Details
+    if industry_data is not None:
+        st.markdown("### Industry Details")
+        industry = industry_data.iloc[0]  # Assuming one industry per user
+        industry_details = {
+            "Industry State OCMMS Code": industry['state_ocmms_id'],
+            "Industry Category": industry['industry_category'],
+            "Industry Name": industry['industry_name'],
+            "Address": industry['address'],
+            "District": industry['district'],
+            "State": industry['state'],
+            "Production Capacity": industry['production_capacity'],
+            "Number of stacks": industry['num_stacks'],
+            "Industry Environment Head": industry['industry_environment_head'],
+            "Instrument Head": industry['industry_instrument_head'],
+            "Concerned Person for CEMS": industry['concerned_person_cems'],
+            "Industry Representative Email Id": industry['industry_representative_email'],
+        }
+        for field, value in industry_details.items():
+            with st.container():
+                cols = st.columns([1, 3])  # Adjust widths as needed
+                cols[0].markdown(f"<p style='font-weight: bold; text-align: left;'>{field}:</p>",
+                                 unsafe_allow_html=True)
+                cols[1].markdown(f"<p style='text-align: left;'>{value}</p>", unsafe_allow_html=True)
+
+        st.markdown("<hr>", unsafe_allow_html=True)
     else:
-        st.error("Industry details not found. Please ensure the industry is registered.")
+        st.warning("No Industry Details Found.")
+
+    # Display Stack Details with Associated CEMS Parameters Horizontally
+    if stack_data is not None:
+        st.markdown("### Stack and CEMS Details")
+        for i, stack in stack_data.iterrows():
+            st.markdown(f"#### Stack {i + 1} Details")
+            table_data = {
+                # "Stack ID": stack_data["stack_id"],
+                "Process Attached": stack_data["process_attached"],
+                "Stack Type": stack_data["apcd_details"],
+                "Latitude": stack_data["latitude"],
+                "Longitude": stack_data["longitude"],
+                "Stack Shape": stack_data["stack_shape"],
+                "Diameter (m)": stack_data["diameter"],
+                "Length (m)": stack_data["length"],
+                "Width (m)": stack_data["width"],
+                "Stack Material": stack_data["stack_material"],
+                "Stack Height (m)": stack_data["stack_height"],
+                "Platform Height (m)": stack_data["platform_height"],
+                "Platform Approachable": stack_data["platform_approachable"],
+                "Approaching Media": stack_data["approaching_media"],
+                "CEMS Installed": stack_data["cems_installed"],
+                "Stack Params": stack_data["stack_params"],
+                "Duct Params": stack_data["duct_params"],
+                "Follows Formula": stack_data["follows_formula"],
+                "Manual Port Installed": stack_data["manual_port_installed"],
+                "CEMS Below Manual": stack_data["cems_below_manual"],
+                "Parameters": stack_data["parameters"],
+            }
+
+            # Convert dictionary to DataFrame
+            stck_df = pd.DataFrame(table_data)
+            stck_df.index = [f"Stack_{i + 1}" for i in range(len(stck_df))]
+            stck_x = stck_df.iloc[i:i+1]
+            stck_x.dropna(axis=1, how='all', inplace=True)
+            # Display as a table
+            # st.table(stck_x)
+
+            # Convert DataFrame to HTML
+            html = stck_x.to_html(index=False)
+
+            # Generate CSS for column widths
+            column_count = len(stck_x.columns)
+            default_width = 100  # Default width for all columns
+            specific_widths = {
+                # 2: 50,  # Width for the first column
+                 # Width for the second column
+                # Add more specific widths as needed
+            }
+
+            # Create CSS rules
+            css_rules = []
+            for i in range(1, column_count + 1):
+                width = specific_widths.get(i, default_width)  # Use specific width or default
+                css_rules.append(f"th:nth-child({i}), td:nth-child({i}) {{ width: {width}px; }}")
+
+            # Combine CSS rules
+            custom_css = f"""
+            <style>
+                table {{
+                    width: 100%;  /* Set the table width */
+                    border-collapse: collapse;  /* Optional: for better border handling */
+                }}
+                th, td {{
+                    border: 1px solid #ddd;  /* Optional: add borders to cells */
+                    padding: 8px;  /* Optional: add padding to cells */
+                    text-align: center;  /* Optional: align text to the left */
+                }}
+                {" ".join(css_rules)}  /* Add all CSS rules */
+            </style>
+            """
+
+            # Display the table with custom CSS
+            st.markdown(custom_css, unsafe_allow_html=True)
+            st.markdown(html, unsafe_allow_html=True)
+
+            # Filter CEMS details for this stack
+            if cems_data is not None:
+                cems_for_stack = cems_data[cems_data['stack_id'] == stack['stack_id']]
+            st.markdown("##### Parameter Details")
+            for j, cems in cems_for_stack.iterrows():
+                table_param = {
+                    "Parameter": cems['parameter'],
+                    "Make": cems['make'],
+                    "Model": cems['model'],
+                    "Serial Number": cems['serial_number'],
+                    "SPCB Approved Emission Limit": cems['emission_limit'],
+                    "Measuring Range (Low)": cems['measuring_range_low'],
+                    "Measuring Range (High)": cems['measuring_range_high'],
+                    "Is Certified?": cems['certified'],
+                    "Certification Agency": cems['certification_agency'],
+                    "Communication Protocol": cems['communication_protocol'],
+                    "Measurement Method": cems['measurement_method'],
+                    "Technology": cems['technology'],
+                    "Connected to BSPCB?": cems['connected_bspcb'],
+                    "BSPCB URL": cems['bspcb_url'],
+                    "Connected to CPCB?": cems['connected_cpcb'],
+                    "CPCB URL": cems['cpcb_url'],
+                }
+
+                # Convert dictionary to DataFrame
+                param_df = pd.DataFrame(table_param, index=[0])  # Create a DataFrame with a single row
+                param_df.dropna(axis=1, how='all', inplace=True)
+
+                # Convert DataFrame to HTML
+                html = param_df.to_html(index=False)
+
+                # Generate CSS for column widths
+                column_count = len(param_df.columns)
+                default_width = 100  # Default width for all columns
+                specific_widths = {
+                    # 2: 50,  # Width for the first column
+                    # Width for the second column
+                    # Add more specific widths as needed
+                }
+
+                # Create CSS rules
+                css_rules = []
+                for i in range(1, column_count + 1):
+                    width = specific_widths.get(i, default_width)  # Use specific width or default
+                    css_rules.append(f"th:nth-child({i}), td:nth-child({i}) {{ width: {width}px; }}")
+
+                # Combine CSS rules
+                custom_css = f"""
+                            <style>
+                                table {{
+                                    width: 100%;  /* Set the table width */
+                                    border-collapse: collapse;  /* Optional: for better border handling */
+                                }}
+                                th, td {{
+                                    border: 1px solid #ddd;  /* Optional: add borders to cells */
+                                    padding: 8px;  /* Optional: add padding to cells */
+                                    text-align: center;  /* Optional: align text to the left */
+                                }}
+                                {" ".join(css_rules)}  /* Add all CSS rules */
+                            </style>
+                            """
+
+                # Display the table with custom CSS
+                st.markdown(custom_css, unsafe_allow_html=True)
+                st.markdown(html, unsafe_allow_html=True)
+        else:
+            st.warning(f"No CEMS Details Found for Stack {stack['stack_id']}.")
+    else:
+        st.warning("No Stack Details Found.")
+#
+#     # Printable Dashboard Option
+#     st.markdown("### Printable Version")
+#     if st.button("Print Dashboard"):
+#         st.write("Please use your browser's print functionality (Ctrl + P) to print this page.")
 
 
 def fill_stacks(user_id):
@@ -295,6 +812,12 @@ def fill_stacks(user_id):
                 "Parameters Monitored in Duct",
                 ["PM", "SO2", "NOx", "CO", "O2", "NH3", "HCL", "Total Fluoride", "HF", "Hg", "H2S", "CL2"]
             )
+        elif cems_installed == "Duct":
+            duct_params = st.multiselect(
+                "Parameters Monitored in Duct",
+                ["PM", "SO2", "NOx", "CO", "O2", "NH3", "HCL", "Total Fluoride", "HF", "Hg", "H2S", "CL2"]
+            )
+            stack_params = None
         else:
             stack_params = None  # Ensure it is always a list
             duct_params = None
@@ -320,7 +843,14 @@ def fill_stacks(user_id):
                 "Does the Installation follows (2LW/L+W) criteria (Rectangular)?", ["Yes", "No"]
             )
 
-        if cems_installed in ["Duct", "Both"]:
+        if cems_installed in ["Duct"]:
+            manual_port_installed = st.selectbox(
+                "Has a Manual Monitoring Port been installed in the duct?", ["Yes", "No"]
+            )
+            if manual_port_installed == "No":
+                st.write("Please, Refer CPCB Guidelines")
+
+        elif cems_installed in ["Both"]:
             manual_port_installed = st.selectbox(
                 "Has a Manual Monitoring Port been installed in the duct?", ["Yes", "No"]
             )
@@ -359,7 +889,6 @@ def fill_stacks(user_id):
                 mandatory_fields.extend([stack_params, duct_params])
             elif cems_installed == "Duct":
                 mandatory_fields.append(duct_params)
-
             if platform_approachable == "Yes":
                 mandatory_fields.append(approaching_media)
 
@@ -392,6 +921,17 @@ def fill_stacks(user_id):
                 stack_id = c.lastrowid
                 conn.commit()
 
+                c.execute("""
+                        UPDATE stacks
+                        SET number_params = 
+                            CASE 
+                                WHEN parameters IS NULL OR parameters = '' THEN 0
+                                ELSE (LENGTH(parameters) - LENGTH(REPLACE(parameters, ',', '')) + 1)
+                            END
+                        WHERE stack_id = ?
+                    """, (stack_id,))
+                conn.commit()
+
                 # Increment the completed_stacks counter
                 c.execute("""
                         UPDATE industry
@@ -399,6 +939,7 @@ def fill_stacks(user_id):
                         WHERE user_id = ?
                     """, (user_id,))
                 conn.commit()
+
 
             # Save stack state in session
             st.session_state[f"stack_{current_stack}"] = True
@@ -417,6 +958,11 @@ def fill_cems_details(user_id):
         c = conn.cursor()
         c.execute("SELECT stack_id, process_attached, parameters FROM stacks WHERE user_id = ?", (user_id,))
         stack_details = c.fetchall()
+
+        st.write(stack_details)
+        x = stack_details[0][0]
+        st.write(x)
+
 
     if not stack_details:
         st.error("No stack details found. Please fill in stack details first.")
@@ -465,9 +1011,9 @@ def fill_cems_details(user_id):
     if f"form_reset_{selected_stack_id}" not in st.session_state:
         st.session_state[f"form_reset_{selected_stack_id}"] = False
 
-
     # Form for entering CEMS details
-    with st.form(f"cems_form_{selected_stack_id}", clear_on_submit=st.session_state[f"form_reset_{selected_stack_id}"]) as form:
+    with st.form(f"cems_form_{selected_stack_id}",
+                 clear_on_submit=st.session_state[f"form_reset_{selected_stack_id}"]) as form:
         make = st.text_input("Make")
         model = st.text_input("Model")
         serial_number = st.text_input("Serial Number")
@@ -523,7 +1069,7 @@ def fill_cems_details(user_id):
             st.error("Kindly fill the CPCB URL.")
             return
 
-        st.success("CEMS Details submitted successfully!")
+        # st.success("CEMS Details submitted successfully!")
 
         st.write("CEMS Form Submitted:", {
             "user_id": user_id,
@@ -550,21 +1096,29 @@ def fill_cems_details(user_id):
 
                 # Here, use the stack_id to associate the CEMS data with the correct stack
                 c.execute(""" 
-                    INSERT INTO cems_instruments (stack_id, parameter, make, model, serial_number, emission_limit, 
+                    INSERT INTO cems_instruments (stack_id, user_id_ind, parameter, make, model, serial_number, emission_limit, 
                     measuring_range_low, measuring_range_high, certified, certification_agency, communication_protocol, 
                     measurement_method, technology, connected_bspcb, bspcb_url, cpcb_url, connected_cpcb)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """, (
-                    selected_stack_id, selected_parameter, make, model, serial_number, measuring_range_low,
+                    selected_stack_id, f'ind_{user_id}', selected_parameter, make, model, serial_number, measuring_range_low,
                     emission_limit, measuring_range_high, certified, certification_agency, communication_protocol,
-                    measurement_method, technology, bspcb_url, cpcb_url, connected_bspcb, connected_cpcb
+                    measurement_method, technology, connected_bspcb, bspcb_url, connected_cpcb, cpcb_url
                 ))
                 conn.commit()
-                st.session_state[f"form_reset_{selected_stack_id}"] = True # Allow form reset
+
+                c.execute("""
+                                        UPDATE stacks
+                                        SET completed_parameters = completed_parameters + 1
+                                        WHERE stack_id = ?
+                                    """, (selected_stack_id,))
+                conn.commit()
+
+                st.session_state[f"form_reset_{selected_stack_id}"] = True  # Allow form reset
 
             st.success(f"CEMS details for {selected_parameter} saved!")
-            st.session_state[f"cems_{selected_stack_id}_{selected_parameter}"] = True  # Mark CEMS form as completed for this parameter
-            
+            st.session_state[
+                f"cems_{selected_stack_id}_{selected_parameter}"] = True  # Mark CEMS form as completed for this parameter
 
             st.rerun()
 
@@ -572,140 +1126,184 @@ def fill_cems_details(user_id):
             st.error(f"An error occurred while saving CEMS details: {e}")
             st.session_state[f"form_reset_{selected_stack_id}"] = False  # Prevent reset on error
 
+
 # Main Function
 def main():
     """Main application logic."""
-    # st.image("logo3.jpg")
-    st.title("Industry Registration Portal")
+    col1, col2, col3, col4, col5 = st.columns([1,1,1,1,1])
+    with col1:
+        st.image("USAID.png" )  # Display logo
+    with col3:
+        st.image("bspcb.png")  # Display logo
+    with col5:
+        st.image("CEEW.png")  # Display logo
+
+    st.markdown(f"<h1 style='text-align: center'>Industry Registration Portal</h1>", unsafe_allow_html=True)
+
+
+
+    # st.title("Industry Registration Portal")
     create_database_tables()
+    add_admin_user()  # Add an admin user (only needs to run once)
+
+    # Initialize session state
+    if "admin_logged_in" not in st.session_state:
+        st.session_state["admin_logged_in"] = False
 
     if "logged_in" not in st.session_state:
         st.session_state["logged_in"] = False
         st.session_state["user_id"] = None
 
-    if not st.session_state["logged_in"]:
-        # st.header("Please log in or register to continue.")
-        menu = ["Register Industry", "Login"]
-        choice = st.sidebar.selectbox("Menu", menu)
+    # Show navigation only before login
+    if not st.session_state["logged_in"] and not st.session_state["admin_logged_in"]:
+        st.sidebar.title("Navigation")
+        navigation = ["User Login/Registration", "Admin Login"]
+        selected_page = st.sidebar.selectbox("Select a page", navigation)
 
-        if choice == "Register Industry":
-            st.subheader("Register Industry")
-            # Registration form
-            with st.form("register_form"):
-                industry_category = st.selectbox("Industry Category", options=category, placeholder="Select Category",
-                                                 index=None)
-                state_ocmms_id = st.text_input("State OCMMS Id")
-                industry_name = st.text_input("Industry Name")
-                address = st.text_input("Address")
-                state = st.selectbox("State", options=state_list, placeholder="Select State", index=None)
-                district = st.selectbox("District", options=dist, placeholder="Select District", index=None)
-                production_capacity = st.text_input("Production Capacity")
-                num_stacks = st.number_input("Number of Stacks", min_value=1)
-                industry_environment_head = st.text_input("Industry Environment Head")
-                industry_instrument_head = st.text_input("Industry Instrument Head")
-                concerned_person_cems = st.text_input("Concerned Person for CEMS")
 
-                # Industry Representative Email Id and Password at the end
-                email = st.text_input("Industry Representative Email Id (used for login)")
-                password = st.text_input("Password", type="password")
+        # Admin Login and Dashboard
+        if selected_page == "Admin Login":
+                admin_login_page()
 
-                submit = st.form_submit_button("Register Industry")
+        # User Login/Registration
+        elif selected_page == "User Login/Registration":
 
-            # Validate mandatory fields
-            if submit:
-                if not (
-                        industry_category and state_ocmms_id and industry_name and address and state and district and production_capacity
-                        and num_stacks and industry_environment_head and industry_instrument_head and concerned_person_cems
-                        and email and password):
-                    st.error("All fields are mandatory. Please fill in all fields.")
-                    return
+            if not st.session_state["logged_in"]:
+                # st.header("Please log in or register to continue.")
+                menu = ["Register Industry", "Login"]
+                choice = st.sidebar.selectbox("Menu", menu)
 
-                # Validate email format
-                if not is_valid_email(email):
-                    st.error("Please enter a valid email address.")
-                    return
-                def is_email_and_ocmms_unique(email, state_ocmms_id):
-                        with get_database_connection() as conn:
+                if choice == "Register Industry":
+                    st.subheader("Register Industry")
+                    # Registration form
+                    with st.form("register_form"):
+                        industry_category = st.selectbox("Industry Category", options=category, placeholder="Select Category",
+                                                         index=None)
+                        state_ocmms_id = st.text_input("State OCMMS Id")
+                        industry_name = st.text_input("Industry Name")
+                        address = st.text_input("Address")
+                        state = st.selectbox("State", options=state_list, placeholder="Select State", index=None)
+                        district = st.selectbox("District", options=dist, placeholder="Select District", index=None)
+                        production_capacity = st.text_input("Production Capacity")
+                        num_stacks = st.number_input("Number of Stacks", min_value=1)
+                        industry_environment_head = st.text_input("Industry Environment Head")
+                        industry_instrument_head = st.text_input("Industry Instrument Head")
+                        concerned_person_cems = st.text_input("Concerned Person for CEMS")
+
+                        # Industry Representative Email Id and Password at the end
+                        email = st.text_input("Industry Representative Email Id (used for login)")
+                        password = st.text_input("Password", type="password")
+
+                        submit = st.form_submit_button("Register Industry")
+
+                    # Validate mandatory fields
+                    if submit:
+                        if not (
+                                industry_category and state_ocmms_id and industry_name and address and state and district and production_capacity
+                                and num_stacks and industry_environment_head and industry_instrument_head and concerned_person_cems
+                                and email and password):
+                            st.error("All fields are mandatory. Please fill in all fields.")
+                            return
+
+                        # Validate email format
+                        if not is_valid_email(email):
+                            st.error("Please enter a valid email address.")
+                            return
+
+                        def is_email_and_ocmms_unique(email, state_ocmms_id):
+                            with get_database_connection() as conn:
+                                c = conn.cursor()
+                                # Check email uniqueness
+                                c.execute("SELECT COUNT(*) FROM user WHERE email = ?", (email,))
+                                if c.fetchone()[0] > 0:
+                                    return "Email already exists."
+                                c = conn.cursor()
+                                # Check state_ocmms_id uniqueness
+                                c.execute("SELECT COUNT(*) FROM industry WHERE state_ocmms_id = ?", (state_ocmms_id,))
+                                if c.fetchone()[0] > 0:
+                                    return "State OCMMS ID already exists."
+                            return None  # Both are unique
+
+                        # Example during registration:
+                        error_message = is_email_and_ocmms_unique(email, state_ocmms_id)
+                        if error_message:
+                            st.error(error_message)
+                        else:
+                            # Save data to the database
+                            try:
+                                conn = get_database_connection()
+                                c = conn.cursor()
+
+                                # Insert user (with email used for login)
+                                hashed_password = hash_password(password)
+                                c.execute("INSERT INTO user (email, password) VALUES (?, ?)", (email, hashed_password))
+                                user_id = c.lastrowid
+                                conn.commit()
+                                user_id_str = f"ind_{user_id}"  # Format user_id like 'ind_1', 'ind_2', etc.
+
+                                # Insert industry
+                                c.execute('''INSERT INTO industry (user_id, user_id_ind, industry_category, state_ocmms_id, industry_name, address,
+                                                                                    state, district, production_capacity, num_stacks, industry_environment_head,
+                                                                                    industry_instrument_head, concerned_person_cems, industry_representative_email)
+                                                                                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)''',
+                                          (user_id, user_id_str, industry_category, state_ocmms_id, industry_name, address,
+                                           state,
+                                           district, production_capacity, num_stacks, industry_environment_head,
+                                           industry_instrument_head,
+                                           concerned_person_cems, email))
+                                conn.commit()
+                                conn.close()
+
+                                st.success("Industry registered successfully!")
+                            except sqlite3.IntegrityError:
+                                st.error("This email is already registered. Please use a different email.")
+                            except Exception as e:
+                                st.write()  # Encapsulate registration logic
+
+                elif choice == "Login":
+                    st.subheader("Login")
+
+                    # Login form
+                    email = st.text_input("Industry Representative Email Id")
+                    password = st.text_input("Password", type="password")
+                    login_button = st.button("Login")
+
+                    if login_button:
+                        try:
+                            conn = get_database_connection()
                             c = conn.cursor()
-                            # Check email uniqueness
-                            c.execute("SELECT COUNT(*) FROM user WHERE email = ?", (email,))
-                            if c.fetchone()[0] > 0:
-                                return "Email already exists."
-                            c = conn.cursor()
-                            # Check state_ocmms_id uniqueness
-                            c.execute("SELECT COUNT(*) FROM industry WHERE state_ocmms_id = ?", (state_ocmms_id,))
-                            if c.fetchone()[0] > 0:
-                                return "State OCMMS ID already exists."     
-                        return None  # Both are unique
-                # Example during registration:
-                error_message = is_email_and_ocmms_unique(email, state_ocmms_id)
-                if error_message:
-                    st.error(error_message)
-                else:
-                    # Save data to the database
-                    try:
-                        conn = get_database_connection()
-                        c = conn.cursor()
-    
-                        # Insert user (with email used for login)
-                        hashed_password = hash_password(password)
-                        c.execute("INSERT INTO user (email, password) VALUES (?, ?)", (email, hashed_password))
-                        user_id = c.lastrowid
-                        conn.commit()
-                        user_id_str = f"ind_{user_id}"  # Format user_id like 'ind_1', 'ind_2', etc.
-    
-                        # Insert industry
-                        c.execute('''INSERT INTO industry (user_id, user_id_ind, industry_category, state_ocmms_id, industry_name, address,
-                                                                            state, district, production_capacity, num_stacks, industry_environment_head,
-                                                                            industry_instrument_head, concerned_person_cems, industry_representative_email)
-                                                                            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)''',
-                                  (user_id, user_id_str, industry_category, state_ocmms_id, industry_name, address, state,
-                                   district, production_capacity, num_stacks, industry_environment_head,
-                                   industry_instrument_head,
-                                   concerned_person_cems, email))
-                        conn.commit()
-                        conn.close()
-    
-                        st.success("Industry registered successfully!")
-                    except sqlite3.IntegrityError:
-                        st.error("This email is already registered. Please use a different email.")
-                    except Exception as e:
-                        st.write()  # Encapsulate registration logic
 
-        elif choice == "Login":
-            st.subheader("Login")
+                            # Verify email and password
+                            c.execute("SELECT id, password FROM user WHERE email = ?", (email,))
+                            user = c.fetchone()
 
-            # Login form
-            email = st.text_input("Industry Representative Email Id")
-            password = st.text_input("Password", type="password")
-            login_button = st.button("Login")
+                            if user and hash_password(password) == user[1]:
+                                st.success("Login successful!")
+                                st.session_state["logged_in"] = True
+                                st.session_state["user_id"] = user[0]
+                                st.session_state["current_page"] = "Industry Details"
+                                st.rerun()
+                                st.write(f"User ID in session state: {st.session_state['user_id']}")  # Debugging
 
-            if login_button:
-                try:
-                    conn = get_database_connection()
-                    c = conn.cursor()
+                            else:
+                                st.error("Invalid email or password.")
+                            conn.close()
+                        except Exception as e:
+                            st.error(f"An error occurred: {e}")
 
-                    # Verify email and password
-                    c.execute("SELECT id, password FROM user WHERE email = ?", (email,))
-                    user = c.fetchone()
+    # Admin Dashboard
+    elif st.session_state["admin_logged_in"]:
+        admin_dashboard()
 
-                    if user and hash_password(password) == user[1]:
-                        st.success("Login successful!")
-                        st.session_state["logged_in"] = True
-                        st.session_state["user_id"] = user[0]
-                        st.session_state["current_page"] = "Industry Details"
-                        st.rerun()
-                        st.write(f"User ID in session state: {st.session_state['user_id']}")  # Debugging
-
-                    else:
-                        st.error("Invalid email or password.")
-                    conn.close()
-                except Exception as e:
-                    st.error(f"An error occurred: {e}")
-
-    else:
+    # User-Specific Dashboard
+    elif st.session_state["logged_in"]:
         user_id = st.session_state["user_id"]
         sidebar_forms(user_id)
+
+        # else:
+        #     user_id = st.session_state["user_id"]
+        #     sidebar_forms(user_id)
+
 
 
 if __name__ == "__main__":
