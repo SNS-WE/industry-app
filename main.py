@@ -948,6 +948,19 @@ def main():
 
     # st.title("Industry Registration Portal")
     create_database_tables()
+
+    """Main application."""
+    query_params = st.experimental_get_query_params()
+    page = query_params.get("page", ["home"])[0]  # Default to "home" if no page is specified
+    if page == "home":
+        st.title("Industry Dashboard")
+        display_all_details()
+    elif page == "details":
+        ind_id = query_params.get("ind_id", [None])[0]
+        if ind_id:
+            show_industry_details(ind_id)
+        else:
+            st.warning("No industry ID provided.")
             
     # Initialize session state
     if "admin_logged_in" not in st.session_state:
@@ -967,18 +980,7 @@ def main():
         # Admin Login and Dashboard
         if selected_page == "Admin Login":
                 admin_login_page()
-                """Main application."""
-                query_params = st.experimental_get_query_params()
-                page = query_params.get("page", ["home"])[0]  # Default to "home" if no page is specified
-                if page == "home":
-                    st.title("Industry Dashboard")
-                    display_all_details()
-                elif page == "details":
-                    ind_id = query_params.get("ind_id", [None])[0]
-                    if ind_id:
-                        show_industry_details(ind_id)
-                    else:
-                        st.warning("No industry ID provided.")
+                
 
         # User Login/Registration
         elif selected_page == "User Login/Registration":
