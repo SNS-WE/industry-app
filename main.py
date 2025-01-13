@@ -250,6 +250,26 @@ def display_all_details():
                         show_industry_details(row['ind_id'])  # Call function to show details for the selected industry
         else:
             st.warning("No industry details found.")
+            
+def show_industry_details(ind_id):
+    """Show detailed information for the selected industry."""
+    st.subheader(f"Details for Industry ID: {ind_id}")
+    with get_database_connection() as conn:
+        c = conn.cursor()
+
+        # Fetch industry details
+        c.execute("SELECT * FROM industry WHERE ind_id = ?", (ind_id,))
+        industry_details = c.fetchone()
+
+        if industry_details:
+            # Convert details to a dictionary for display
+            industry_dict = {desc[0]: value for desc, value in zip(c.description, industry_details)}
+
+            # Display the details in a readable format
+            for key, value in industry_dict.items():
+                st.markdown(f"**{key.replace('_', ' ').capitalize()}:** {value}")
+        else:
+            st.warning("No details found for the selected industry.")
 
 def logout():
     """Function to log out the user and reset session state."""
