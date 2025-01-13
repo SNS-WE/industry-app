@@ -266,7 +266,7 @@ def display_all_details():
                     st.markdown(f"{row['production_capacity']}")
                 with col5:
                     # Add a "View" button in the last column, using ind_id as the key
-                    if st.button(f"View {row['industry_name']}", key=f"view_{row['ind_id']}"):
+                    if st.button("View", key=f"view_{row['ind_id']}"):
                         # Store both the ind_id and state_ocmms_id in session state
                         st.session_state["selected_ind_id"] = row["ind_id"]
                         st.session_state["selected_state_ocmms_id"] = row["state_ocmms_id"]
