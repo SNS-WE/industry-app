@@ -281,8 +281,6 @@ def show_industry_details(ind_id):
             if st.button("Home"):
                 st.session_state["selected_ind_id"] = None
                 st.experimental_rerun()
-        else:
-            st.warning("No details found for the selected industry.")
 
 # def admin_dashboard():
 #     st.subheader("Admin Dashboard")
