@@ -287,8 +287,8 @@ def show_industry_dashboard(user_id):
     stack_data = fetch_data(stack_query, (user_id,))
     #
     # Fetch CEMS Details
-    # cems_query = "SELECT * FROM cems_instruments WHERE user_id_ind = ?"
-    # cems_data = fetch_data(cems_query, (f"ind_{user_id}",))
+    cems_query = "SELECT * FROM cems_instruments WHERE user_id_ind = ?"
+    cems_data = fetch_data(cems_query, (f"ind_{user_id}",))
 
     # Display Industry Details
     if industry_data is not None:
