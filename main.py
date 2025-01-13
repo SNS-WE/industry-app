@@ -176,17 +176,6 @@ def sidebar_forms(user_id):
         # st.session_state["user_id"] = None
         # st.experimental_rerun() # Rerun to reflect the logged-out state
 
-# Add an admin user (only needed once)
-def add_admin_user():
-    with get_database_connection() as conn:
-        c = conn.cursor()
-        hashed_password = hash_password("admin@#123")  # Replace with your desired admin password
-        try:
-            c.execute("INSERT INTO admin (username, password) VALUES (?, ?)", ("admin", hashed_password))
-            conn.commit()
-        except sqlite3.IntegrityError:
-            pass  # Admin already exists
-
 # Admin login page
 def admin_login_page():
     st.subheader("Admin Login")
@@ -474,12 +463,6 @@ def show_industry_dashboard(user_id):
             st.warning(f"No CEMS Details Found for Stack {stack['stack_id']}.")
     else:
         st.warning("No Stack Details Found.")
-#
-#     # Printable Dashboard Option
-#     st.markdown("### Printable Version")
-#     if st.button("Print Dashboard"):
-#         st.write("Please use your browser's print functionality (Ctrl + P) to print this page.")
-
 
 def fill_stacks(user_id):
     """Form to fill stack details."""
@@ -902,7 +885,6 @@ def main():
 
     # st.title("Industry Registration Portal")
     create_database_tables()
-    add_admin_user()  # Add an admin user (only needs to run once)
 
     # Initialize session state
     if "admin_logged_in" not in st.session_state:
