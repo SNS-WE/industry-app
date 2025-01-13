@@ -202,7 +202,7 @@ def admin_dashboard():
     # Logout button
     if st.sidebar.button("Logout", key="admin_logout"):
         st.session_state["admin_logged_in"] = False
-        st.experimental_rerun()  # Redirect back to login
+        st.rerun()  # Redirect back to login
 
     # Display all user-filled industry details
     display_all_details()
