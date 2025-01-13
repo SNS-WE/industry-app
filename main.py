@@ -194,8 +194,11 @@ def admin_login_page():
                 st.rerun()  # Redirect to refresh the session
             else:
                 st.error("Invalid admin credentials.")
-
+    
 def admin_dashboard():
+    if "selected_ind_id" not in st.session_state:
+    st.session_state["selected_ind_id"] = None
+    
     st.subheader("Admin Dashboard")
 
     # Logout button
@@ -275,6 +278,12 @@ def show_industry_details(ind_id):
             if st.button("Home"):
                 st.session_state["selected_ind_id"] = None  # Clear the selected industry
                 st.experimental_rerun()  # Refresh the page to go back to the main list
+        else:
+            st.warning("No details found for the selected industry.")
+            # Add a "Home" button in case of no details
+            if st.button("Home"):
+                st.session_state["selected_ind_id"] = None
+                st.experimental_rerun()
         else:
             st.warning("No details found for the selected industry.")
 
