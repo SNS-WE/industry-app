@@ -274,17 +274,9 @@ def show_industry_details(ind_id):
             # Display the details in a readable format
             for key, value in industry_dict.items():
                 st.markdown(f"**{key.replace('_', ' ').capitalize()}:** {value}")
-
-            # Add a "Home" button to return to the industry list
-            if st.button("Home"):
-                st.session_state["selected_ind_id"] = None  # Clear the selected industry
-                st.rerun()  # Refresh the page to go back to the main list
+            
         else:
             st.warning("No details found for the selected industry.")
-            # Add a "Home" button in case of no details
-            if st.button("Home"):
-                st.session_state["selected_ind_id"] = None
-                st.rerun()
 
 # def admin_dashboard():
 #     st.subheader("Admin Dashboard")
