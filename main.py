@@ -1135,7 +1135,7 @@ def main():
 
     # st.title("Industry Registration Portal")
     create_database_tables()
-    add_admin_user()  # Add an admin user (only needs to run once)
+  
 
     # Initialize session state
     if "admin_logged_in" not in st.session_state:
