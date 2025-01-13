@@ -4,6 +4,7 @@ import sqlitecloud
 import hashlib
 import re
 import time
+import pandas as pd
 
 
 # Utility Functions
