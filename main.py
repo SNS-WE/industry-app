@@ -464,8 +464,8 @@ def show_industry_dashboard(user_id):
                     # Display the table with custom CSS
                     st.markdown(custom_css, unsafe_allow_html=True)
                     st.markdown(html, unsafe_allow_html=True)
-        else:
-            st.warning(f"No CEMS Details Found for Stack {stack['stack_id']}.")
+            else:
+                st.warning(f"No CEMS Details Found for Stack {stack['stack_id']}.")
     else:
         st.warning("No Stack Details Found.")
 
