@@ -208,39 +208,41 @@ def admin_dashboard():
     display_all_details()
     
 def display_all_details():
+    """Display a table of industries with links to view details in a new tab."""
     st.subheader("All User-Filled Industry Details")
-    if "selected_ind_id" not in st.session_state:
-        st.session_state["selected_ind_id"] = None
 
     with get_database_connection() as conn:
         c = conn.cursor()
-        c.execute("SELECT * FROM industry")
+        c.execute("SELECT ind_id, industry_name, address FROM industry")
         industries = c.fetchall()
 
         if industries:
-            df = pd.DataFrame(industries, columns=[col[0] for col in c.description])
-
-            for index, row in df.iterrows():
-                if st.button(f"View {row['industry_name']}", key=f"view_{row['ind_id']}"):
-                    st.session_state["selected_ind_id"] = row["ind_id"]
-
-    # Show details if an industry is selected
-    if st.session_state["selected_ind_id"]:
-        show_industry_details(st.session_state["selected_ind_id"])
-
+            for industry in industries:
+                ind_id = industry[0]
+                industry_name = industry[1]
+                st.markdown(
+                    f'<a href="/?page=details&ind_id={ind_id}" target="_blank">View Details for {industry_name}</a>',
+                    unsafe_allow_html=True,
+                )
+        else:
+            st.warning("No industry details found.")
+            
 def show_industry_details(ind_id):
+    """Show detailed information for the selected industry."""
     st.subheader(f"Details for Industry ID: {ind_id}")
+
     with get_database_connection() as conn:
         c = conn.cursor()
         c.execute("SELECT * FROM industry WHERE ind_id = ?", (ind_id,))
         industry_details = c.fetchone()
 
         if industry_details:
+            # Convert to a dictionary for easier display
             industry_dict = {desc[0]: value for desc, value in zip(c.description, industry_details)}
             for key, value in industry_dict.items():
                 st.markdown(f"**{key.replace('_', ' ').capitalize()}:** {value}")
         else:
-            st.warning("No details found for the selected industry.")
+            st.warning("No details found for this industry.")
 
 
 # # Display all user-filled details for the admin
@@ -947,6 +949,20 @@ def main():
     # st.title("Industry Registration Portal")
     create_database_tables()
 
+    """Main application."""
+    query_params = st.experimental_get_query_params()
+    page = query_params.get("page", ["home"])[0]  # Default to "home" if no page is specified
+
+    if page == "home":
+        st.title("Industry Dashboard")
+        display_all_details()
+    elif page == "details":
+        ind_id = query_params.get("ind_id", [None])[0]
+        if ind_id:
+            show_industry_details(ind_id)
+        else:
+            st.warning("No industry ID provided.")
+            
     # Initialize session state
     if "admin_logged_in" not in st.session_state:
         st.session_state["admin_logged_in"] = False
