@@ -395,70 +395,70 @@ def show_industry_dashboard(user_id):
             st.markdown(html, unsafe_allow_html=True)
 
             # Filter CEMS details for this stack
-            # if cems_data is not None:
-            #     cems_for_stack = cems_data[cems_data['stack_id'] == stack['stack_id']]
-            # st.markdown("##### Parameter Details")
-            # for j, cems in cems_for_stack.iterrows():
-            #     table_param = {
-            #         "Parameter": cems['parameter'],
-            #         "Make": cems['make'],
-            #         "Model": cems['model'],
-            #         "Serial Number": cems['serial_number'],
-            #         "SPCB Approved Emission Limit": cems['emission_limit'],
-            #         "Measuring Range (Low)": cems['measuring_range_low'],
-            #         "Measuring Range (High)": cems['measuring_range_high'],
-            #         "Is Certified?": cems['certified'],
-            #         "Certification Agency": cems['certification_agency'],
-            #         "Communication Protocol": cems['communication_protocol'],
-            #         "Measurement Method": cems['measurement_method'],
-            #         "Technology": cems['technology'],
-            #         "Connected to BSPCB?": cems['connected_bspcb'],
-            #         "BSPCB URL": cems['bspcb_url'],
-            #         "Connected to CPCB?": cems['connected_cpcb'],
-            #         "CPCB URL": cems['cpcb_url'],
-            #     }
+            if cems_data is not None:
+                cems_for_stack = cems_data[cems_data['stack_id'] == stack['stack_id']]
+            st.markdown("##### Parameter Details")
+            for j, cems in cems_for_stack.iterrows():
+                table_param = {
+                    "Parameter": cems['parameter'],
+                    "Make": cems['make'],
+                    "Model": cems['model'],
+                    "Serial Number": cems['serial_number'],
+                    "SPCB Approved Emission Limit": cems['emission_limit'],
+                    "Measuring Range (Low)": cems['measuring_range_low'],
+                    "Measuring Range (High)": cems['measuring_range_high'],
+                    "Is Certified?": cems['certified'],
+                    "Certification Agency": cems['certification_agency'],
+                    "Communication Protocol": cems['communication_protocol'],
+                    "Measurement Method": cems['measurement_method'],
+                    "Technology": cems['technology'],
+                    "Connected to BSPCB?": cems['connected_bspcb'],
+                    "BSPCB URL": cems['bspcb_url'],
+                    "Connected to CPCB?": cems['connected_cpcb'],
+                    "CPCB URL": cems['cpcb_url'],
+                }
 
-            #     # Convert dictionary to DataFrame
-            #     param_df = pd.DataFrame(table_param, index=[0])  # Create a DataFrame with a single row
-            #     param_df.dropna(axis=1, how='all', inplace=True)
+                # Convert dictionary to DataFrame
+                param_df = pd.DataFrame(table_param, index=[0])  # Create a DataFrame with a single row
+                param_df.dropna(axis=1, how='all', inplace=True)
 
-            #     # Convert DataFrame to HTML
-            #     html = param_df.to_html(index=False)
+                # Convert DataFrame to HTML
+                html = param_df.to_html(index=False)
 
-            #     # Generate CSS for column widths
-            #     column_count = len(param_df.columns)
-            #     default_width = 100  # Default width for all columns
-            #     specific_widths = {
-            #         # 2: 50,  # Width for the first column
-            #         # Width for the second column
-            #         # Add more specific widths as needed
-            #     }
+                # Generate CSS for column widths
+                column_count = len(param_df.columns)
+                default_width = 100  # Default width for all columns
+                specific_widths = {
+                    # 2: 50,  # Width for the first column
+                    # Width for the second column
+                    # Add more specific widths as needed
+                }
 
-            #     # Create CSS rules
-            #     css_rules = []
-            #     for i in range(1, column_count + 1):
-            #         width = specific_widths.get(i, default_width)  # Use specific width or default
-            #         css_rules.append(f"th:nth-child({i}), td:nth-child({i}) {{ width: {width}px; }}")
+                # Create CSS rules
+                css_rules = []
+                for i in range(1, column_count + 1):
+                    width = specific_widths.get(i, default_width)  # Use specific width or default
+                    css_rules.append(f"th:nth-child({i}), td:nth-child({i}) {{ width: {width}px; }}")
 
-            #     # Combine CSS rules
-            #     custom_css = f"""
-            #                 <style>
-            #                     table {{
-            #                         width: 100%;  /* Set the table width */
-            #                         border-collapse: collapse;  /* Optional: for better border handling */
-            #                     }}
-            #                     th, td {{
-            #                         border: 1px solid #ddd;  /* Optional: add borders to cells */
-            #                         padding: 8px;  /* Optional: add padding to cells */
-            #                         text-align: center;  /* Optional: align text to the left */
-            #                     }}
-            #                     {" ".join(css_rules)}  /* Add all CSS rules */
-            #                 </style>
-            #                 """
+                # Combine CSS rules
+                custom_css = f"""
+                            <style>
+                                table {{
+                                    width: 100%;  /* Set the table width */
+                                    border-collapse: collapse;  /* Optional: for better border handling */
+                                }}
+                                th, td {{
+                                    border: 1px solid #ddd;  /* Optional: add borders to cells */
+                                    padding: 8px;  /* Optional: add padding to cells */
+                                    text-align: center;  /* Optional: align text to the left */
+                                }}
+                                {" ".join(css_rules)}  /* Add all CSS rules */
+                            </style>
+                            """
 
-            #     # Display the table with custom CSS
-            #     st.markdown(custom_css, unsafe_allow_html=True)
-            #     st.markdown(html, unsafe_allow_html=True)
+                # Display the table with custom CSS
+                st.markdown(custom_css, unsafe_allow_html=True)
+                st.markdown(html, unsafe_allow_html=True)
         else:
             st.warning(f"No CEMS Details Found for Stack {stack['stack_id']}.")
     else:
