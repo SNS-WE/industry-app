@@ -216,8 +216,9 @@ def admin_dashboard():
         # Display the list of all industries
         display_all_details()
 
-# Display all user-filled details for the admin
+
 def display_all_details():
+    """Display all user-filled industry details with buttons in each row using `st.columns`."""
     st.subheader("All User-Filled Industry Details")
     with get_database_connection() as conn:
         c = conn.cursor()
@@ -236,27 +237,71 @@ def display_all_details():
             if search_term:
                 ind_df = ind_df[ind_df['industry_name'].str.contains(search_term, case=False, na=False)]
 
-            st.dataframe(ind_df, column_config={
-                'state_ocmms_id': 'State OCMMS Code',
-                'industry_category': 'Category',
-                'industry_name': 'Industry Name',
-                'address': 'Address',
-                'district': 'District',
-                'production_capacity': 'Production Capacity',
-                'num_stacks': 'Number of Stacks',
-                'industry_environment_head': 'Industry Environment Head',
-                'concerned_person_cems': 'Concerned Person for CEMS',
-                'industry_representative_email': 'Industry Representative Email ID'
-            }, hide_index=True)  # Customize column display
+            # Iterate over rows and create a layout with columns for each row
+            for _, row in ind_df.iterrows():
+                # Define columns for the row
+                col1, col2, col3, col4, col5 = st.columns([2, 2, 2, 2, 1])  # Adjust column widths as needed
 
-            # Add a "View" button for each industry
-            for index, row in df.iterrows():
-                if st.button(f"View {row['industry_name']}", key=f"view_{row['ind_id']}"):
-                    # Store the selected industry ID in session state
-                    st.session_state["selected_ind_id"] = row["ind_id"]
-                    st.rerun()  # Refresh the page to load the details
+                # Display data fields in the columns
+                with col1:
+                    st.markdown(f"**Industry Name:** {row['industry_name']}")
+                with col2:
+                    st.markdown(f"**Category:** {row['industry_category']}")
+                with col3:
+                    st.markdown(f"**District:** {row['district']}")
+                with col4:
+                    st.markdown(f"**Production Capacity:** {row['production_capacity']}")
+                with col5:
+                    # Add a "View" button in the last column
+                    if st.button("View", key=f"view_{row['state_ocmms_id']}"):
+                        st.session_state["selected_ind_id"] = row['state_ocmms_id']
+                        st.experimental_rerun()  # Reload to show details
+
         else:
             st.warning("No industry details found.")
+
+
+# # Display all user-filled details for the admin
+# def display_all_details():
+#     st.subheader("All User-Filled Industry Details")
+#     with get_database_connection() as conn:
+#         c = conn.cursor()
+#         c.execute("SELECT * FROM industry")
+#         industries = c.fetchall()
+
+#         if industries:
+#             # Create a DataFrame for better visualization
+#             df = pd.DataFrame(industries, columns=[col[0] for col in c.description])
+#             ind_df = df[['state_ocmms_id', 'industry_name', 'industry_category', 'address', 'district',
+#                          'production_capacity', 'num_stacks', 'industry_environment_head',
+#                          'concerned_person_cems', 'industry_representative_email']]
+
+#             # Search functionality
+#             search_term = st.text_input("Search Industry", "")
+#             if search_term:
+#                 ind_df = ind_df[ind_df['industry_name'].str.contains(search_term, case=False, na=False)]
+
+#             st.dataframe(ind_df, column_config={
+#                 'state_ocmms_id': 'State OCMMS Code',
+#                 'industry_category': 'Category',
+#                 'industry_name': 'Industry Name',
+#                 'address': 'Address',
+#                 'district': 'District',
+#                 'production_capacity': 'Production Capacity',
+#                 'num_stacks': 'Number of Stacks',
+#                 'industry_environment_head': 'Industry Environment Head',
+#                 'concerned_person_cems': 'Concerned Person for CEMS',
+#                 'industry_representative_email': 'Industry Representative Email ID'
+#             }, hide_index=True)  # Customize column display
+
+#             # Add a "View" button for each industry
+#             for index, row in df.iterrows():
+#                 if st.button(f"View {row['industry_name']}", key=f"view_{row['ind_id']}"):
+#                     # Store the selected industry ID in session state
+#                     st.session_state["selected_ind_id"] = row["ind_id"]
+#                     st.rerun()  # Refresh the page to load the details
+#         else:
+#             st.warning("No industry details found.")
 
 def show_industry_details(ind_id):
     """Show detailed information for the selected industry."""
