@@ -219,7 +219,7 @@ def admin_dashboard():
 
 def display_all_details():
     """Display all user-filled industry details with buttons in each row using `st.columns`."""
-    st.subheader("All User-Filled Industry Details")
+    st.subheader("All User-Filled Industry Details")  # Display the heading once at the top
     with get_database_connection() as conn:
         c = conn.cursor()
         c.execute("SELECT * FROM industry")
@@ -237,6 +237,19 @@ def display_all_details():
             if search_term:
                 ind_df = ind_df[ind_df['industry_name'].str.contains(search_term, case=False, na=False)]
 
+            # Display the headers just once
+            col1, col2, col3, col4, col5 = st.columns([2, 2, 2, 2, 1])  # Adjust column widths as needed
+            with col1:
+                st.markdown("**Industry Name**")
+            with col2:
+                st.markdown("**Category**")
+            with col3:
+                st.markdown("**District**")
+            with col4:
+                st.markdown("**Production Capacity**")
+            with col5:
+                st.markdown("**Actions**")  # For the View button
+
             # Iterate over rows and create a layout with columns for each row
             for _, row in ind_df.iterrows():
                 # Define columns for the row
@@ -244,18 +257,18 @@ def display_all_details():
 
                 # Display data fields in the columns
                 with col1:
-                    st.markdown(f"**Industry Name:** {row['industry_name']}")
+                    st.markdown(f"{row['industry_name']}")
                 with col2:
-                    st.markdown(f"**Category:** {row['industry_category']}")
+                    st.markdown(f"{row['industry_category']}")
                 with col3:
-                    st.markdown(f"**District:** {row['district']}")
+                    st.markdown(f"{row['district']}")
                 with col4:
-                    st.markdown(f"**Production Capacity:** {row['production_capacity']}")
+                    st.markdown(f"{row['production_capacity']}")
                 with col5:
                     # Add a "View" button in the last column
                     if st.button("View", key=f"view_{row['state_ocmms_id']}"):
                         st.session_state["selected_ind_id"] = row['state_ocmms_id']
-                        st.experimental_rerun()  # Reload to show details
+                        st.rerun()  # Reload to show details
 
         else:
             st.warning("No industry details found.")
