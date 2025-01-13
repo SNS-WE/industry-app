@@ -198,14 +198,15 @@ def admin_login_page():
 def admin_dashboard():
     st.subheader("Admin Dashboard")
 
+    # Add a "Home" button to return to the industry list
+    if st.sidebar.button("Return to Dasboard"):
+        st.session_state["selected_ind_id"] = None  # Clear the selected industry
+        st.rerun()  # Refresh the page to go back to the main list
+        
     # Logout button
     if st.sidebar.button("Logout", key="admin_logout"):
         st.session_state["admin_logged_in"] = False
         st.rerun()  # Redirect back to login
-    # Add a "Home" button to return to the industry list
-    if st.sidebar.button("Home"):
-        st.session_state["selected_ind_id"] = None  # Clear the selected industry
-        st.rerun()  # Refresh the page to go back to the main list
 
     # Check if an industry has been selected
     if "selected_ind_id" in st.session_state and st.session_state["selected_ind_id"]:
