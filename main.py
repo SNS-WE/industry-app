@@ -249,7 +249,7 @@ def display_all_details():
                 if st.button(f"View {row['industry_name']}", key=f"view_{row['ind_id']}"):
                     # Store the selected industry ID in session state
                     st.session_state["selected_ind_id"] = row["ind_id"]
-                    st.experimental_rerun()  # Refresh the page to load the details
+                    st.rerun()  # Refresh the page to load the details
         else:
             st.warning("No industry details found.")
 
