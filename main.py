@@ -266,9 +266,10 @@ def display_all_details():
                     st.markdown(f"{row['production_capacity']}")
                 with col5:
                     # Add a "View" button in the last column
-                    if st.button("View", key=f"view_{row['state_ocmms_id']}"):
-                        st.session_state["selected_ind_id"] = row['state_ocmms_id']
-                        st.rerun()  # Reload to show details
+                    if st.button(f"View {row['industry_name']}", key=f"view_{row['ind_id']}"):
+                        # Store the selected industry ID in session state
+                        st.session_state["selected_ind_id"] = row["ind_id"]
+                        st.rerun()  # Refresh the page to load the details
 
         else:
             st.warning("No industry details found.")
