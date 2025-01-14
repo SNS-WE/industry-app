@@ -1041,7 +1041,7 @@ def fill_cems_details(user_id):
 def main():
     """Main application logic."""
     col1, col2, col3, col4, col5 = st.columns([2,1,1,1,1])
-    with col1:
+    with col2:
         st.image("USAID.png" )  # Display logo
     with col3:
         st.image("bspcb.png")  # Display logo
