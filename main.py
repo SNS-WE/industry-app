@@ -1040,7 +1040,7 @@ def fill_cems_details(user_id):
 # Main Function
 def main():
     """Main application logic."""
-    col1, col2, col3, col4, col5 = st.columns([2,1,2,1,2])
+    col1, col2, col3, col4, col5 = st.columns([2,1,1,1,1])
     with col1:
         st.image("usaid.png" )  # Display logo
     with col3:
