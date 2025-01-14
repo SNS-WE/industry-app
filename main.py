@@ -1043,7 +1043,7 @@ def main():
     col1, col2, col3, col4, col5 = st.columns([2,1,2,1,2])
     with col1:
         st.image("USAID.png" )  # Display logo
-    with col4:
+    with col3:
         st.image("bspcb.png")  # Display logo
     with col5:
         st.image("CEEW.png")  # Display logo
