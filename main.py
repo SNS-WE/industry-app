@@ -1067,7 +1067,7 @@ def main():
     # Show navigation only before login
     if not st.session_state["logged_in"] and not st.session_state["admin_logged_in"]:
         st.sidebar.title("Navigation")
-        navigation = ["User Login/Registration", "Admin Login"]
+        navigation = ["Admin Login","User Login/Registration"]
         selected_page = st.sidebar.selectbox("Select a page", navigation)
 
 
