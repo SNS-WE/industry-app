@@ -1081,7 +1081,7 @@ def main():
 
             if not st.session_state["logged_in"]:
                 # st.header("Please log in or register to continue.")
-                menu = ["Register Industry", "Login"]
+                menu = ["Login", "Register Industry"]
                 choice = st.sidebar.selectbox("Menu", menu)
 
                 if choice == "Register Industry":
