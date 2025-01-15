@@ -1077,7 +1077,7 @@ def main():
                 
 
         # User Login/Registration
-        elif selected_page == "User Login/Registration":
+        elif selected_page == "Industry Login/Registration":
 
             if not st.session_state["logged_in"]:
                 # st.header("Please log in or register to continue.")
