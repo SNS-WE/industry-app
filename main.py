@@ -1062,7 +1062,7 @@ def main():
     
     st.markdown(page_bg_img, unsafe_allow_html=True)
     return
-    set_png_as_page_bg('background.png')
+    set_png_as_page_bg('USAID.png')
 
 
     # st.title("Industry Registration Portal")
