@@ -1067,7 +1067,7 @@ def main():
     # Show navigation only before login
     if not st.session_state["logged_in"] and not st.session_state["admin_logged_in"]:
         st.sidebar.title("User Login")
-        navigation = ["Admin Login","Industry Login/Registration"]
+        navigation = ["Admin Login","Industry Login/New Industry Registration"]
         selected_page = st.sidebar.selectbox("Select User Type", navigation)
 
 
@@ -1077,7 +1077,7 @@ def main():
                 
 
         # User Login/Registration
-        elif selected_page == "Industry Login/Registration":
+        elif selected_page == "Industry Login/New Industry Registration":
 
             if not st.session_state["logged_in"]:
                 # st.header("Please log in or register to continue.")
