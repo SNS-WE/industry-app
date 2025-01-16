@@ -1040,12 +1040,12 @@ def fill_cems_details(user_id):
 # Main Function
 def main():
     """Main application logic."""
-    col1, col2, col3, col4, col5 = st.columns([1,1,1,1,1])
+    col1, col2, col3, col4, col5 = st.columns([1,1,1,1,1,1])
     with col1:
         st.image("usaid.png" )  # Display logo
-    with col3:
+    with col4:
         st.image("bspcb.png")  # Display logo
-    with col5:
+    with col6:
         st.image("CEEW.png")  # Display logo
 
     st.markdown(f"<h1 style='text-align: center'>Industry Registration Portal</h1>", unsafe_allow_html=True)
