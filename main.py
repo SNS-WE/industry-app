@@ -497,7 +497,7 @@ def show_industry_dashboard(user_id):
                 "Diameter (m)": stack_data["diameter"],
                 "Length (m)": stack_data["length"],
                 "Width (m)": stack_data["width"],
-                "Stack Material": stack_data["stack_material"],
+                "Stack Construction Material": stack_data["stack_material"],
                 "Stack Height (m)": stack_data["stack_height"],
                 "Platform Height (m)": stack_data["platform_height"],
                 "Platform Approachable": stack_data["platform_approachable"],
