@@ -304,7 +304,7 @@ def display_all_details():
 #                 'district': 'District',
 #                 'production_capacity': 'Production Capacity',
 #                 'num_stacks': 'Number of Stacks',
-#                 'industry_environment_head': 'Industry Environment Head',
+#                 'industry_environment_head': 'Environment Head',
 #                 'concerned_person_cems': 'Concerned Person for CEMS',
 #                 'industry_representative_email': 'Industry Representative Email ID'
 #             }, hide_index=True)  # Customize column display
@@ -381,8 +381,8 @@ def show_industry_details(ind_id):
 #                     'state':'State',
 #                     'production_capacity':'Production Capacity',
 #                     'num_stacks':'Number of stacks',
-#                     'industry_environment_head':'Industry Environment Head',
-#                     'industry_instrument_head':'Instrument Head',
+#                     'industry_environment_head':'Environment Head',
+#                     'industry_instrument_head':'Instrumentation Head',
 #                     'concerned_person_cems':'Concerned Person for CEMS',
 #                     'industry_representative_email':'Industry Representative Email Id'
 #                 }, hide_index=True)  # Replace with actual column names
@@ -466,8 +466,8 @@ def show_industry_dashboard(user_id):
             "State": industry['state'],
             "Production Capacity": industry['production_capacity'],
             "Number of stacks": industry['num_stacks'],
-            "Industry Environment Head": industry['industry_environment_head'],
-            "Instrument Head": industry['industry_instrument_head'],
+            "Environment Department Head": industry['industry_environment_head'],
+            "Instrumentation Department Head": industry['industry_instrument_head'],
             "Concerned Person for CEMS": industry['concerned_person_cems'],
             "Industry Representative Email Id": industry['industry_representative_email'],
         }
@@ -1097,8 +1097,8 @@ def main():
                         district = st.selectbox("District", options=dist, placeholder="Select District", index=None)
                         production_capacity = st.text_input("Production Capacity")
                         num_stacks = st.number_input("Number of Stacks", min_value=1)
-                        industry_environment_head = st.text_input("Industry Environment Head")
-                        industry_instrument_head = st.text_input("Industry Instrument Head")
+                        industry_environment_head = st.text_input("Environment Department Head")
+                        industry_instrument_head = st.text_input("Instrumentation Department Head")
                         concerned_person_cems = st.text_input("Concerned Person for CEMS")
 
                         # Industry Representative Email Id and Password at the end
