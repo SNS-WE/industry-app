@@ -188,19 +188,6 @@ def sidebar_forms(user_id):
         # st.session_state["user_id"] = None
         # st.experimental_rerun() # Rerun to reflect the logged-out state
 
-def add_admin_user():
-    with get_database_connection() as conn:
-        c = conn.cursor()
-        hashed_password = hash_password("admin@#123")  # Replace with your desired admin password
-        try:
-            c.execute("INSERT INTO admin (username, password) VALUES (?, ?)", ("admin", hashed_password))
-            conn.commit()
-            st.info("Admin user added successfully.")
-        except sqlite3.IntegrityError as e:
-            if "UNIQUE constraint failed" in str(e):
-                st.info("Admin user already exists.")
-            else:
-                st.error(f"An error occurred: {e}")
 
 # Admin login page
 def admin_login_page():
@@ -1130,7 +1117,7 @@ def main():
 
     # st.title("Industry Registration Portal")
     create_database_tables()
-    add_admin_user() # One time run
+    # add_admin_user() # One time run
 
     if "selected_ind_id" not in st.session_state:
         st.session_state["selected_ind_id"] = None
