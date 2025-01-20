@@ -18,6 +18,11 @@ def is_valid_email(email):
     email_regex = r'^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$'
     return re.match(email_regex, email)
 
+def isValid(phone):
+  # Create the function isValid
+   a = re.compile("[6-9][0-9]{9}")
+   return a.match(phone)
+
 
 def get_database_connection():
     """Returns a database connection."""
@@ -56,6 +61,7 @@ def create_database_tables():
                         user_id_ind TEXT UNIQUE,
                         industry_category TEXT,
                         state_ocmms_id TEXT UNIQUE,
+                        cpcb_ind_code TEXT UNIQUE,
                         industry_name TEXT,
                         address TEXT,
                         state TEXT,
@@ -63,8 +69,11 @@ def create_database_tables():
                         production_capacity TEXT,
                         num_stacks INTEGER,
                         industry_environment_head TEXT,
+                        env_phone INTEGER,
                         industry_instrument_head TEXT,
+                        inst_phone INTEGER,
                         concerned_person_cems TEXT,
+                        cems_phone INTEGER,
                         industry_representative_email TEXT,
                         completed_stacks INTEGER DEFAULT 0,
                         FOREIGN KEY (user_id) REFERENCES user (id)
@@ -76,6 +85,7 @@ def create_database_tables():
                         stack_id INTEGER PRIMARY KEY AUTOINCREMENT,
                         user_id INTEGER,
                         user_id_ind TEXT,
+                        stack_identity TEXT,
                         process_attached TEXT,
                         apcd_details TEXT,
                         latitude REAL,
@@ -150,7 +160,9 @@ def refresh_page():
         <meta http-equiv="refresh" content="2">
         """, unsafe_allow_html=True)
 
+
 st.set_page_config(layout="wide")
+
 
 def sidebar_forms(user_id):
     """Function to render the sidebar after login."""
@@ -176,6 +188,7 @@ def sidebar_forms(user_id):
         # st.session_state["user_id"] = None
         # st.experimental_rerun() # Rerun to reflect the logged-out state
 
+
 # Admin login page
 def admin_login_page():
     st.subheader("Admin Login")
@@ -194,15 +207,15 @@ def admin_login_page():
                 st.rerun()  # Redirect to refresh the session
             else:
                 st.error("Invalid admin credentials.")
-    
-def admin_dashboard():
-    st.subheader("Admin Dashboard")
 
+
+def admin_dashboard():
+    st.markdown(f"<h3 style='text-align: center'>Admin Dashboard</h3>", unsafe_allow_html=True)
     # Add a "Home" button to return to the industry list
     if st.sidebar.button("Return to Dasboard"):
         st.session_state["selected_ind_id"] = None  # Clear the selected industry
         st.rerun()  # Refresh the page to go back to the main list
-        
+
     # Logout button
     if st.sidebar.button("Logout", key="admin_logout"):
         st.session_state["admin_logged_in"] = False
@@ -237,182 +250,240 @@ def display_all_details():
             if search_term:
                 ind_df = ind_df[ind_df['industry_name'].str.contains(search_term, case=False, na=False)]
 
-            # Display the headers just once
-            col1, col2, col3, col4, col5 = st.columns([2, 2, 2, 2, 1])  # Adjust column widths as needed
-            with col1:
-                st.markdown("**Industry Name**")
-            with col2:
-                st.markdown("**Category**")
-            with col3:
-                st.markdown("**District**")
-            with col4:
-                st.markdown("**Production Capacity**")
-            with col5:
-                st.markdown("**Actions**")  # For the View button
+            columns = st.columns([1, 1, 1, 1, 1, 1, 1])  # Column widths for Streamlit layout
+            labels = ["Industry Name", "Category", "State OCMMS Id", "District", "Production Capacity", "No. of Stacks",
+                      "Actions"]
 
-            # Iterate over rows and create a layout with columns for each row
+            for col, label in zip(columns, labels):
+                with col:
+                    st.markdown(f"**{label}**")
+
             for _, row in ind_df.iterrows():
-                # Define columns for the row
-                col1, col2, col3, col4, col5 = st.columns([2, 2, 2, 2, 1])  # Adjust column widths as needed
+                cols = st.columns([1, 1, 1, 1, 1, 1, 1])  # Adjust column widths as needed
+                db_labels = ["industry_name", "industry_category", "state_ocmms_id", "district", "production_capacity",
+                             "num_stacks"]
 
-                # Display data fields in the columns
-                with col1:
-                    st.markdown(f"{row['industry_name']}")
-                with col2:
-                    st.markdown(f"{row['industry_category']}")
-                with col3:
-                    st.markdown(f"{row['district']}")
-                with col4:
-                    st.markdown(f"{row['production_capacity']}")
-                with col5:
-                    # Add a "View" button in the last column, using ind_id as the key
+                for col, db_labels in zip(cols, db_labels):
+                    with col:
+                        st.markdown(f"{row[db_labels]}")
+
+                with cols[-1]:  # Last column for the button
                     if st.button("View", key=f"view_{row['ind_id']}"):
                         # Store both the ind_id and state_ocmms_id in session state
                         st.session_state["selected_ind_id"] = row["ind_id"]
                         st.session_state["selected_state_ocmms_id"] = row["state_ocmms_id"]
-                        st.rerun()  # Refresh the page to load the details
+                        st.rerun()
 
         else:
             st.warning("No industry details found.")
 
-
-# # Display all user-filled details for the admin
-# def display_all_details():
-#     st.subheader("All User-Filled Industry Details")
-#     with get_database_connection() as conn:
-#         c = conn.cursor()
-#         c.execute("SELECT * FROM industry")
-#         industries = c.fetchall()
-
-#         if industries:
-#             # Create a DataFrame for better visualization
-#             df = pd.DataFrame(industries, columns=[col[0] for col in c.description])
-#             ind_df = df[['state_ocmms_id', 'industry_name', 'industry_category', 'address', 'district',
-#                          'production_capacity', 'num_stacks', 'industry_environment_head',
-#                          'concerned_person_cems', 'industry_representative_email']]
-
-#             # Search functionality
-#             search_term = st.text_input("Search Industry", "")
-#             if search_term:
-#                 ind_df = ind_df[ind_df['industry_name'].str.contains(search_term, case=False, na=False)]
-
-#             st.dataframe(ind_df, column_config={
-#                 'state_ocmms_id': 'State OCMMS Code',
-#                 'industry_category': 'Category',
-#                 'industry_name': 'Industry Name',
-#                 'address': 'Address',
-#                 'district': 'District',
-#                 'production_capacity': 'Production Capacity',
-#                 'num_stacks': 'Number of Stacks',
-#                 'industry_environment_head': 'Environment Head',
-#                 'concerned_person_cems': 'Concerned Person for CEMS',
-#                 'industry_representative_email': 'Industry Representative Email ID'
-#             }, hide_index=True)  # Customize column display
-
-#             # Add a "View" button for each industry
-#             for index, row in df.iterrows():
-#                 if st.button(f"View {row['industry_name']}", key=f"view_{row['ind_id']}"):
-#                     # Store the selected industry ID in session state
-#                     st.session_state["selected_ind_id"] = row["ind_id"]
-#                     st.rerun()  # Refresh the page to load the details
-#         else:
-#             st.warning("No industry details found.")
-
 def show_industry_details(ind_id):
     """Show detailed information for the selected industry."""
-    st.subheader(f"Details for Industry ID: {ind_id}")
-    with get_database_connection() as conn:
-        c = conn.cursor()
 
-        # Fetch industry details
-        c.execute("SELECT * FROM industry WHERE ind_id = ?", (ind_id,))
-        industry_details = c.fetchone()
+    st.markdown("<h1 style='text-align: center; color: black;'>Industry Details</h1>", unsafe_allow_html=True)
 
-        if industry_details:
-            # Convert details to a dictionary for display
-            industry_dict = {desc[0]: value for desc, value in zip(c.description, industry_details)}
+    def fetch_data(query, params=None):
+        """Fetch data from the database."""
+        with get_database_connection() as conn:
+            c = conn.cursor()
+            c.execute(query, params or ())
+            data = c.fetchall()
+            columns = [desc[0] for desc in c.description]  # Extract column names
+            return pd.DataFrame(data, columns=columns) if data else None
 
-            # Display the details in a readable format
-            for key, value in industry_dict.items():
-                st.markdown(f"**{key.replace('_', ' ').capitalize()}:** {value}")
-            
-        else:
-            st.warning("No details found for the selected industry.")
+    # Fetch Industry Details
+    industry_query = "SELECT * FROM industry WHERE ind_id = ?"
+    industry_data = fetch_data(industry_query, (ind_id,))
 
-# def admin_dashboard():
-#     st.subheader("Admin Dashboard")
+    # Fetch Stack Details
+    stack_query = "SELECT * FROM stacks WHERE user_id_ind = ?"
+    stack_data = fetch_data(stack_query, (f"ind_{ind_id}",))
+    #
+    # Fetch CEMS Details
+    cems_query = "SELECT * FROM cems_instruments WHERE user_id_ind = ?"
+    cems_data = fetch_data(cems_query, (f"ind_{ind_id}",))
 
-#     # Logout button
-#     if st.sidebar.button("Logout", key="admin_logout"):
-#         st.session_state["admin_logged_in"] = False
-#         st.rerun()  # Redirect back to login
+    # Display Industry Details
+    if industry_data is not None:
+        # st.markdown("### Industry Details")
+        industry = industry_data.iloc[0]  # Assuming one industry per user
+        industry_details = {
+            "Industry State OCMMS Code": industry['state_ocmms_id'],
+            "CPCB Industry Code": industry['cpcb_ind_code'],
+            "Industry Category": industry['industry_category'],
+            "Industry Name": industry['industry_name'],
+            "Address": industry['address'],
+            "District": industry['district'],
+            "State": industry['state'],
+            "Production Capacity": industry['production_capacity'],
+            "Number of stacks": industry['num_stacks'],
+            "Environment Department Head": industry['industry_environment_head'],
+            "Phone Number": industry['env_phone'],
+            "Instrumentation Department Head": industry['industry_instrument_head'],
+            "Phone Number": industry['inst_phone'],
+            "Concerned Person for CEMS": industry['concerned_person_cems'],
+            "Phone Number": industry['cems_phone'],
+            "Industry Representative Email Id": industry['industry_representative_email'],
+        }
+        for field, value in industry_details.items():
+            with st.container():
+                cols = st.columns([1, 3])  # Adjust widths as needed
+                cols[0].markdown(f"<p style='font-weight: bold; text-align: left;'>{field}:</p>",
+                                 unsafe_allow_html=True)
+                cols[1].markdown(f"<p style='text-align: left;'>{value}</p>", unsafe_allow_html=True)
 
-#     # Display all user-filled industry details
-#     display_all_details()
+        st.markdown("<hr>", unsafe_allow_html=True)
+    else:
+        st.warning("No Industry Details Found.")
 
-# # Display all user-filled details for the admin
-# def display_all_details():
-#     st.subheader("All User-Filled Industry Details")
-#     with get_database_connection() as conn:
-#         c = conn.cursor()
-#         c.execute("SELECT * FROM industry")
-#         industries = c.fetchall()
-#         if industries:
-#             # Create a DataFrame for better visualization
-#             df = pd.DataFrame(industries, columns=[col[0] for col in c.description])
-#             ind_df = df[['state_ocmms_id','industry_name', 'industry_category','address','district',
-#                          'production_capacity','num_stacks','industry_environment_head','concerned_person_cems',
-#                          'industry_representative_email']]
+    # Display Stack Details with Associated CEMS Parameters Horizontally
+    if stack_data is not None:
+        st.markdown("### Stack and CEMS Details")
+        for i, stack in stack_data.iterrows():
+            st.markdown(f"#### Stack {i + 1} Details")
+            table_data = {
+                # "Stack ID": stack_data["stack_id"],
+                "Stack Identity or identification Number": stack_data["stack_identity"],
+                "Attached Process": stack_data["process_attached"],
+                "APCD": stack_data["apcd_details"],
+                "Latitude": stack_data["latitude"],
+                "Longitude": stack_data["longitude"],
+                "Stack Type": stack_data["stack_shape"],
+                "Construction Material": stack_data["stack_material"],
+                "Diameter (m)": stack_data["diameter"],
+                "Length (m)": stack_data["length"],
+                "Width (m)": stack_data["width"],
+                "Stack Height (m)": stack_data["stack_height"],
+                "Platform located at (m)": stack_data["platform_height"],
+                "Platform Approachable": stack_data["platform_approachable"],
+                "Approaching Media": stack_data["approaching_media"],
+                "CEMS Installed": stack_data["cems_installed"],
+                "Stack Params": stack_data["stack_params"],
+                "Duct Params": stack_data["duct_params"],
+                "Follows Formula": stack_data["follows_formula"],
+                "Manual Porthole Provided": stack_data["manual_port_installed"],
+                "CEMS Below Manual": stack_data["cems_below_manual"],
+                "Parameters": stack_data["parameters"],
+            }
 
+            # Convert dictionary to DataFrame
+            stck_df = pd.DataFrame(table_data)
+            stck_df.index = [f"Stack_{i + 1}" for i in range(len(stck_df))]
+            stck_x = stck_df.iloc[i:i + 1]
+            stck_x.dropna(axis=1, how='all', inplace=True)
+            # Display as a table
+            # st.table(stck_x)
 
-#             # Search functionality
-#             search_term = st.text_input("Search Industry", "")
-#             if search_term:
-#                 df = df[df['industry_name'].str.contains(search_term, case=False, na=False)]
-#             col1,col2 = st.columns([6,1])
-#             # Display the DataFrame without the Action column first
-#             with col1:
-#                 st.dataframe(ind_df,column_config={
-#                     'state_ocmms_id':'State OCMMS Code',
-#                     'industry_category': 'Category',
-#                     'industry_name' : 'Industry Name',
-#                     'address':'Address',
-#                     'district':'District',
-#                     'state':'State',
-#                     'production_capacity':'Production Capacity',
-#                     'num_stacks':'Number of stacks',
-#                     'industry_environment_head':'Environment Head',
-#                     'industry_instrument_head':'Instrumentation Head',
-#                     'concerned_person_cems':'Concerned Person for CEMS',
-#                     'industry_representative_email':'Industry Representative Email Id'
-#                 }, hide_index=True)  # Replace with actual column names
-#             with col2:
-#                 # Add a "View" button for each industry
-#                 for index, row in df.iterrows():
-#                     if st.button(f"View {row['industry_name']}", key=f"view_{row['ind_id']}"):
-#                         show_industry_details(row['ind_id'])  # Call function to show details for the selected industry
-#         else:
-#             st.warning("No industry details found.")
-            
-# def show_industry_details(ind_id):
-#     """Show detailed information for the selected industry."""
-#     st.subheader(f"Details for Industry ID: {ind_id}")
-#     with get_database_connection() as conn:
-#         c = conn.cursor()
+            # Convert DataFrame to HTML
+            html = stck_x.to_html(index=False)
 
-#         # Fetch industry details
-#         c.execute("SELECT * FROM industry WHERE ind_id = ?", (ind_id,))
-#         industry_details = c.fetchone()
+            # Generate CSS for column widths
+            column_count = len(stck_x.columns)
+            default_width = 100  # Default width for all columns
+            specific_widths = {
+                # 2: 50,  # Width for the first column
+                # Width for the second column
+                # Add more specific widths as needed
+            }
 
-#         if industry_details:
-#             # Convert details to a dictionary for display
-#             industry_dict = {desc[0]: value for desc, value in zip(c.description, industry_details)}
+            # Create CSS rules
+            css_rules = []
+            for i in range(1, column_count + 1):
+                width = specific_widths.get(i, default_width)  # Use specific width or default
+                css_rules.append(f"th:nth-child({i}), td:nth-child({i}) {{ width: {width}px; }}")
 
-#             # Display the details in a readable format
-#             for key, value in industry_dict.items():
-#                 st.markdown(f"**{key.replace('_', ' ').capitalize()}:** {value}")
-#         else:
-#             st.warning("No details found for the selected industry.")
+            # Combine CSS rules
+            custom_css = f"""
+            <style>
+                table {{
+                    width: 100%;  /* Set the table width */
+                    border-collapse: collapse;  /* Optional: for better border handling */
+                }}
+                th, td {{
+                    border: 1px solid #ddd;  /* Optional: add borders to cells */
+                    padding: 8px;  /* Optional: add padding to cells */
+                    text-align: center;  /* Optional: align text to the left */
+                }}
+                {" ".join(css_rules)}  /* Add all CSS rules */
+            </style>
+            """
+
+            # Display the table with custom CSS
+            st.markdown(custom_css, unsafe_allow_html=True)
+            st.markdown(html, unsafe_allow_html=True)
+
+            cems_for_stack = pd.DataFrame()  # default to an empty DF
+
+            # Filter CEMS details for this stack
+            if cems_data is not None:
+                cems_for_stack = cems_data[cems_data['stack_id'] == stack['stack_id']]
+            st.markdown("##### Parameter Details")
+            if not cems_for_stack.empty:
+                for j, cems in cems_for_stack.iterrows():
+                    table_param = {
+                        "Parameter": cems['parameter'],
+                        "Make": cems['make'],
+                        "Model": cems['model'],
+                        "Serial Number": cems['serial_number'],
+                        "SPCB Approved Emission Limit": cems['emission_limit'],
+                        "Measuring Range (Low)": cems['measuring_range_low'],
+                        "Measuring Range (High)": cems['measuring_range_high'],
+                        "Is Certified?": cems['certified'],
+                        "Certification Agency": cems['certification_agency'],
+                        "Communication Protocol": cems['communication_protocol'],
+                        "Measurement Method": cems['measurement_method'],
+                        "Technology": cems['technology'],
+                        "Connected to BSPCB?": cems['connected_bspcb'],
+                        "BSPCB URL": cems['bspcb_url'],
+                        "Connected to CPCB?": cems['connected_cpcb'],
+                        "CPCB URL": cems['cpcb_url'],
+                    }
+
+                    # Convert dictionary to DataFrame
+                    param_df = pd.DataFrame(table_param, index=[0])  # Create a DataFrame with a single row
+                    param_df.dropna(axis=1, how='all', inplace=True)
+
+                    # Convert DataFrame to HTML
+                    html = param_df.to_html(index=False)
+
+                    # Generate CSS for column widths
+                    column_count = len(param_df.columns)
+                    default_width = 100  # Default width for all columns
+                    specific_widths = {
+                        # 2: 50,  # Width for the first column
+                        # Width for the second column
+                        # Add more specific widths as needed
+                    }
+
+                    # Create CSS rules
+                    css_rules = []
+                    for i in range(1, column_count + 1):
+                        width = specific_widths.get(i, default_width)  # Use specific width or default
+                        css_rules.append(f"th:nth-child({i}), td:nth-child({i}) {{ width: {width}px; }}")
+
+                    # Combine CSS rules
+                    custom_css = f"""
+                                <style>
+                                    table {{
+                                        width: 100%;  /* Set the table width */
+                                        border-collapse: collapse;  /* Optional: for better border handling */
+                                    }}
+                                    th, td {{
+                                        border: 1px solid #ddd;  /* Optional: add borders to cells */
+                                        padding: 8px;  /* Optional: add padding to cells */
+                                        text-align: center;  /* Optional: align text to the left */
+                                    }}
+                                    {" ".join(css_rules)}  /* Add all CSS rules */
+                                </style>
+                                """
+
+                    # Display the table with custom CSS
+                    st.markdown(custom_css, unsafe_allow_html=True)
+                    st.markdown(html, unsafe_allow_html=True)
+            else:
+                st.warning(f"No CEMS Details Found for Stack {stack['stack_id']}.")
+    else:
+        st.warning("No Stack Details Found.")
 
 def logout():
     """Function to log out the user and reset session state."""
@@ -459,6 +530,7 @@ def show_industry_dashboard(user_id):
         industry = industry_data.iloc[0]  # Assuming one industry per user
         industry_details = {
             "Industry State OCMMS Code": industry['state_ocmms_id'],
+            "CPCB Industry Code" : industry['cpcb_ind_code'],
             "Industry Category": industry['industry_category'],
             "Industry Name": industry['industry_name'],
             "Address": industry['address'],
@@ -467,8 +539,11 @@ def show_industry_dashboard(user_id):
             "Production Capacity": industry['production_capacity'],
             "Number of stacks": industry['num_stacks'],
             "Environment Department Head": industry['industry_environment_head'],
+            "Phone Number" : industry['env_phone'],
             "Instrumentation Department Head": industry['industry_instrument_head'],
+            "Phone Number" : industry['inst_phone'],
             "Concerned Person for CEMS": industry['concerned_person_cems'],
+            "Phone Number" : industry['cems_phone'],
             "Industry Representative Email Id": industry['industry_representative_email'],
         }
         for field, value in industry_details.items():
@@ -489,24 +564,25 @@ def show_industry_dashboard(user_id):
             st.markdown(f"#### Stack {i + 1} Details")
             table_data = {
                 # "Stack ID": stack_data["stack_id"],
-                "Process Attached": stack_data["process_attached"],
-                "Stack Type": stack_data["apcd_details"],
+                "Stack Identity or identification Number": stack_data["stack_identity"],
+                "Attached Process": stack_data["process_attached"],
+                "APCD": stack_data["apcd_details"],
                 "Latitude": stack_data["latitude"],
                 "Longitude": stack_data["longitude"],
-                "Stack Shape": stack_data["stack_shape"],
+                "Stack Type": stack_data["stack_shape"],
+                "Construction Material": stack_data["stack_material"],
                 "Diameter (m)": stack_data["diameter"],
                 "Length (m)": stack_data["length"],
                 "Width (m)": stack_data["width"],
-                "Stack Construction Material": stack_data["stack_material"],
                 "Stack Height (m)": stack_data["stack_height"],
-                "Platform Height (m)": stack_data["platform_height"],
+                "Platform located at (m)": stack_data["platform_height"],
                 "Platform Approachable": stack_data["platform_approachable"],
                 "Approaching Media": stack_data["approaching_media"],
                 "CEMS Installed": stack_data["cems_installed"],
                 "Stack Params": stack_data["stack_params"],
                 "Duct Params": stack_data["duct_params"],
                 "Follows Formula": stack_data["follows_formula"],
-                "Manual Port Installed": stack_data["manual_port_installed"],
+                "Manual Porthole Provided": stack_data["manual_port_installed"],
                 "CEMS Below Manual": stack_data["cems_below_manual"],
                 "Parameters": stack_data["parameters"],
             }
@@ -514,7 +590,7 @@ def show_industry_dashboard(user_id):
             # Convert dictionary to DataFrame
             stck_df = pd.DataFrame(table_data)
             stck_df.index = [f"Stack_{i + 1}" for i in range(len(stck_df))]
-            stck_x = stck_df.iloc[i:i+1]
+            stck_x = stck_df.iloc[i:i + 1]
             stck_x.dropna(axis=1, how='all', inplace=True)
             # Display as a table
             # st.table(stck_x)
@@ -527,7 +603,7 @@ def show_industry_dashboard(user_id):
             default_width = 100  # Default width for all columns
             specific_widths = {
                 # 2: 50,  # Width for the first column
-                 # Width for the second column
+                # Width for the second column
                 # Add more specific widths as needed
             }
 
@@ -557,10 +633,8 @@ def show_industry_dashboard(user_id):
             st.markdown(custom_css, unsafe_allow_html=True)
             st.markdown(html, unsafe_allow_html=True)
 
-            
-            cems_for_stack = pd.DataFrame() # default to an empty DF
+            cems_for_stack = pd.DataFrame()  # default to an empty DF
 
-            
             # Filter CEMS details for this stack
             if cems_data is not None:
                 cems_for_stack = cems_data[cems_data['stack_id'] == stack['stack_id']]
@@ -585,14 +659,14 @@ def show_industry_dashboard(user_id):
                         "Connected to CPCB?": cems['connected_cpcb'],
                         "CPCB URL": cems['cpcb_url'],
                     }
-    
+
                     # Convert dictionary to DataFrame
                     param_df = pd.DataFrame(table_param, index=[0])  # Create a DataFrame with a single row
                     param_df.dropna(axis=1, how='all', inplace=True)
-    
+
                     # Convert DataFrame to HTML
                     html = param_df.to_html(index=False)
-    
+
                     # Generate CSS for column widths
                     column_count = len(param_df.columns)
                     default_width = 100  # Default width for all columns
@@ -601,13 +675,13 @@ def show_industry_dashboard(user_id):
                         # Width for the second column
                         # Add more specific widths as needed
                     }
-    
+
                     # Create CSS rules
                     css_rules = []
                     for i in range(1, column_count + 1):
                         width = specific_widths.get(i, default_width)  # Use specific width or default
                         css_rules.append(f"th:nth-child({i}), td:nth-child({i}) {{ width: {width}px; }}")
-    
+
                     # Combine CSS rules
                     custom_css = f"""
                                 <style>
@@ -623,7 +697,7 @@ def show_industry_dashboard(user_id):
                                     {" ".join(css_rules)}  /* Add all CSS rules */
                                 </style>
                                 """
-    
+
                     # Display the table with custom CSS
                     st.markdown(custom_css, unsafe_allow_html=True)
                     st.markdown(html, unsafe_allow_html=True)
@@ -631,6 +705,7 @@ def show_industry_dashboard(user_id):
                 st.warning(f"No CEMS Details Found for Stack {stack['stack_id']}.")
     else:
         st.warning("No Stack Details Found.")
+
 
 def fill_stacks(user_id):
     """Form to fill stack details."""
@@ -664,6 +739,7 @@ def fill_stacks(user_id):
 
     if f"stack_{current_stack}" not in st.session_state:
         # Simple input fields (without st.form)
+        stack_identity = st.text_input("Stack Identity or identification Number")
         process_attached = st.text_input("Process Attached")
         apcd_details = st.text_input("APCD Details")
         latitude = st.number_input(
@@ -722,12 +798,6 @@ def fill_stacks(user_id):
                 "Parameters Monitored in Duct",
                 ["PM", "SO2", "NOx", "CO", "O2", "NH3", "HCL", "Total Fluoride", "HF", "Hg", "H2S", "CL2"]
             )
-        elif cems_installed == "Duct":
-            duct_params = st.multiselect(
-                "Parameters Monitored in Duct",
-                ["PM", "SO2", "NOx", "CO", "O2", "NH3", "HCL", "Total Fluoride", "HF", "Hg", "H2S", "CL2"]
-            )
-            stack_params = None
         else:
             stack_params = None  # Ensure it is always a list
             duct_params = None
@@ -784,7 +854,7 @@ def fill_stacks(user_id):
         if st.button("Submit Stack Details"):
             # Collecting all mandatory fields into a list for easy checking
             mandatory_fields = [
-                process_attached, apcd_details, latitude, longitude, stack_condition, stack_shape,
+                stack_identity, process_attached, apcd_details, latitude, longitude, stack_condition, stack_shape,
                 stack_material, stack_height, platform_height, platform_approachable,
                 cems_installed, follows_formula, cems_below_manual
             ]
@@ -797,8 +867,6 @@ def fill_stacks(user_id):
 
             if cems_installed == "Both":
                 mandatory_fields.extend([stack_params, duct_params])
-            elif cems_installed == "Duct":
-                mandatory_fields.append(duct_params)
             if platform_approachable == "Yes":
                 mandatory_fields.append(approaching_media)
 
@@ -816,17 +884,15 @@ def fill_stacks(user_id):
             with get_database_connection() as conn:
                 c = conn.cursor()
                 c.execute(""" 
-                    INSERT INTO stacks (user_id, user_id_ind, process_attached, apcd_details, latitude, longitude, stack_condition,
-                                        stack_shape, diameter, length, width, stack_material, stack_height, 
-                                        platform_height, platform_approachable, approaching_media, cems_installed,
-                                        stack_params, duct_params, follows_formula, manual_port_installed, 
-                                        cems_below_manual, parameters)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""", (
-                    user_id, f'ind_{user_id}', process_attached, apcd_details, latitude, longitude, stack_condition,
-                    stack_shape, diameter, length, width, stack_material, stack_height, platform_height,
-                    platform_approachable, approaching_media, cems_installed, stack_params,
-                    duct_params, follows_formula, manual_port_installed, cems_below_manual,
-                    ",".join(parameters)
+                    INSERT INTO stacks (user_id, user_id_ind, stack_identity, process_attached, apcd_details, latitude,
+                     longitude, stack_condition, stack_shape, diameter, length, width, stack_material, stack_height, 
+                     platform_height, platform_approachable, approaching_media, cems_installed, stack_params, 
+                     duct_params, follows_formula, manual_port_installed, cems_below_manual, parameters)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""", (
+                    user_id, f'ind_{user_id}', stack_identity, process_attached, apcd_details, latitude, longitude,
+                    stack_condition, stack_shape, diameter, length, width, stack_material, stack_height, platform_height,
+                    platform_approachable, approaching_media, cems_installed, stack_params, duct_params,
+                    follows_formula, manual_port_installed, cems_below_manual, ",".join(parameters)
                 ))
                 stack_id = c.lastrowid
                 conn.commit()
@@ -850,7 +916,6 @@ def fill_stacks(user_id):
                     """, (user_id,))
                 conn.commit()
 
-
             # Save stack state in session
             st.session_state[f"stack_{current_stack}"] = True
             st.session_state["parameters"] = parameters  # Store parameters for CEMS form
@@ -872,7 +937,6 @@ def fill_cems_details(user_id):
         st.write(stack_details)
         x = stack_details[0][0]
         st.write(x)
-
 
     if not stack_details:
         st.error("No stack details found. Please fill in stack details first.")
@@ -1011,7 +1075,8 @@ def fill_cems_details(user_id):
                     measurement_method, technology, connected_bspcb, bspcb_url, cpcb_url, connected_cpcb)
                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """, (
-                    selected_stack_id, f'ind_{user_id}', selected_parameter, make, model, serial_number, measuring_range_low,
+                    selected_stack_id, f'ind_{user_id}', selected_parameter, make, model, serial_number,
+                    measuring_range_low,
                     emission_limit, measuring_range_high, certified, certification_agency, communication_protocol,
                     measurement_method, technology, connected_bspcb, bspcb_url, connected_cpcb, cpcb_url
                 ))
@@ -1040,9 +1105,9 @@ def fill_cems_details(user_id):
 # Main Function
 def main():
     """Main application logic."""
-    col1, col2, col3, col4, col5, col6 = st.columns([1,1,1,1,1,1])
+    col1, col2, col3, col4, col5, col6 = st.columns([1, 1, 1, 1, 1, 1])
     with col1:
-        st.image("usaid.png" )  # Display logo
+        st.image("usaid.png")  # Display logo
     with col4:
         st.image("bspcb.png")  # Display logo
     with col6:
@@ -1050,12 +1115,13 @@ def main():
 
     st.markdown(f"<h1 style='text-align: center'>Industry Registration Portal</h1>", unsafe_allow_html=True)
 
-
     # st.title("Industry Registration Portal")
     create_database_tables()
+    # add_admin_user() # One time run
+
     if "selected_ind_id" not in st.session_state:
         st.session_state["selected_ind_id"] = None
-    
+
     # Initialize session state
     if "admin_logged_in" not in st.session_state:
         st.session_state["admin_logged_in"] = False
@@ -1067,14 +1133,13 @@ def main():
     # Show navigation only before login
     if not st.session_state["logged_in"] and not st.session_state["admin_logged_in"]:
         st.sidebar.title("User Login")
-        navigation = ["Admin Login","Industry Login/New Industry Registration"]
+        navigation = ["Admin Login", "Industry Login/New Industry Registration"]
         selected_page = st.sidebar.selectbox("Select User Type", navigation)
-
 
         # Admin Login and Dashboard
         if selected_page == "Admin Login":
-                admin_login_page()
-                
+            admin_login_page()
+
 
         # User Login/Registration
         elif selected_page == "Industry Login/New Industry Registration":
@@ -1088,9 +1153,10 @@ def main():
                     st.subheader("Register Industry")
                     # Registration form
                     with st.form("register_form"):
-                        industry_category = st.selectbox("Industry Category", options=category, placeholder="Select Category",
+                        industry_category = st.selectbox("Industry Category", options=category,placeholder="Select Category",
                                                          index=None)
                         state_ocmms_id = st.text_input("State OCMMS Id")
+                        cpcb_ind_code = st.text_input("CPCB Industry Code")
                         industry_name = st.text_input("Industry Name")
                         address = st.text_input("Address")
                         state = st.selectbox("State", options=state_list, placeholder="Select State", index=None)
@@ -1098,8 +1164,11 @@ def main():
                         production_capacity = st.text_input("Production Capacity")
                         num_stacks = st.number_input("Number of Stacks", min_value=1)
                         industry_environment_head = st.text_input("Environment Department Head")
+                        env_phone = st.number_input("Phone Number")
                         industry_instrument_head = st.text_input("Instrumentation Department Head")
+                        inst_phone = st.number_input("Phone Number")
                         concerned_person_cems = st.text_input("Concerned Person for CEMS")
+                        cems_phone = st.text_input("Phone Number")
 
                         # Industry Representative Email Id and Password at the end
                         email = st.text_input("Industry Representative Email Id (used for login)")
@@ -1110,10 +1179,16 @@ def main():
                     # Validate mandatory fields
                     if submit:
                         if not (
-                                industry_category and state_ocmms_id and industry_name and address and state and district and production_capacity
-                                and num_stacks and industry_environment_head and industry_instrument_head and concerned_person_cems
-                                and email and password):
+                                industry_category and state_ocmms_id and industry_name and address and state
+                                and district and production_capacity and num_stacks and industry_environment_head
+                                and industry_instrument_head and concerned_person_cems and email and password
+                                and env_phone and inst_phone and cems_phone):
                             st.error("All fields are mandatory. Please fill in all fields.")
+                            return
+
+                        # checked the number is valid  or not
+                        if not isValid(env_phone) or not isValid(inst_phone) or not isValid(cems_phone) :
+                            st.error("kindly enter valid Head mobile number")
                             return
 
                         # Validate email format
@@ -1121,7 +1196,7 @@ def main():
                             st.error("Please enter a valid email address.")
                             return
 
-                        def is_email_and_ocmms_unique(email, state_ocmms_id):
+                        def is_email_and_ocmms_unique(email, state_ocmms_id, cpcb_ind_code):
                             with get_database_connection() as conn:
                                 c = conn.cursor()
                                 # Check email uniqueness
@@ -1133,10 +1208,15 @@ def main():
                                 c.execute("SELECT COUNT(*) FROM industry WHERE state_ocmms_id = ?", (state_ocmms_id,))
                                 if c.fetchone()[0] > 0:
                                     return "State OCMMS ID already exists."
+                                c = conn.cursor()
+                                # Check state_ocmms_id uniqueness
+                                c.execute("SELECT COUNT(*) FROM industry WHERE cpcb_ind_code = ?", (cpcb_ind_code,))
+                                if c.fetchone()[0] > 0:
+                                    return "CPCB Industry code already exists."
                             return None  # Both are unique
 
                         # Example during registration:
-                        error_message = is_email_and_ocmms_unique(email, state_ocmms_id)
+                        error_message = is_email_and_ocmms_unique(email, state_ocmms_id, cpcb_ind_code)
                         if error_message:
                             st.error(error_message)
                         else:
@@ -1153,15 +1233,15 @@ def main():
                                 user_id_str = f"ind_{user_id}"  # Format user_id like 'ind_1', 'ind_2', etc.
 
                                 # Insert industry
-                                c.execute('''INSERT INTO industry (user_id, user_id_ind, industry_category, state_ocmms_id, industry_name, address,
-                                                                                    state, district, production_capacity, num_stacks, industry_environment_head,
-                                                                                    industry_instrument_head, concerned_person_cems, industry_representative_email)
-                                                                                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)''',
-                                          (user_id, user_id_str, industry_category, state_ocmms_id, industry_name, address,
-                                           state,
-                                           district, production_capacity, num_stacks, industry_environment_head,
-                                           industry_instrument_head,
-                                           concerned_person_cems, email))
+                                c.execute('''INSERT INTO industry (user_id, user_id_ind, industry_category, 
+                                state_ocmms_id, cpcb_ind_code, industry_name, address, state, district, production_capacity, 
+                                num_stacks, industry_environment_head, env_phone, industry_instrument_head, inst_phone,
+                                 concerned_person_cems, cems_phone, industry_representative_email)
+                                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)''',
+                                          (user_id, user_id_str, industry_category, state_ocmms_id,
+                                           cpcb_ind_code, industry_name, address, state, district, production_capacity,
+                                           num_stacks, industry_environment_head, env_phone, industry_instrument_head,
+                                           inst_phone, concerned_person_cems, cems_phone, email))
                                 conn.commit()
                                 conn.close()
 
@@ -1214,7 +1294,6 @@ def main():
         # else:
         #     user_id = st.session_state["user_id"]
         #     sidebar_forms(user_id)
-
 
 
 if __name__ == "__main__":
