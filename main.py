@@ -267,8 +267,8 @@ def display_all_details():
                     st.markdown(f"**{label}**")
 
             for _, row in ind_df.iterrows():
-                cols = st.columns([1, 1, 1, 1, 1, 1, 1])  # Adjust column widths as needed
-                db_labels = ["industry_name", "industry_category", "state_ocmms_id", "district", "production_capacity",
+                cols = st.columns([1, 1, 1, 1, 1, 1, 1, 1])  # Adjust column widths as needed
+                db_labels = ["industry_name", "industry_category", "state_ocmms_id", "cpcb_ind_code", "district", "production_capacity",
                              "num_stacks"]
 
                 for col, db_labels in zip(cols, db_labels):
