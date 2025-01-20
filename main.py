@@ -1174,9 +1174,9 @@ def main():
                         industry_environment_head = st.text_input("Environment Department Head")
                         env_phone = st.number_input("Environment Department Head Phone Number", value=None, step=1)
                         industry_instrument_head = st.text_input("Instrumentation Department Head")
-                        inst_phone = st.number_input("Instrumentation Department Head Phone Number", value=None)
+                        inst_phone = st.number_input("Instrumentation Department Head Phone Number", value=None, step=1)
                         concerned_person_cems = st.text_input("Concerned Person for CEMS")
-                        cems_phone = st.number_input("Concerned Person for CEMS Phone Number", value=None)
+                        cems_phone = st.number_input("Concerned Person for CEMS Phone Number", value=None, step=1)
 
                         # Industry Representative Email Id and Password at the end
                         email = st.text_input("Industry Representative Email Id (used for login)")
