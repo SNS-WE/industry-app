@@ -19,10 +19,17 @@ def is_valid_email(email):
     return re.match(email_regex, email)
 
 def isValid(phone):
-    # Create a regex pattern for mobile numbers (starting with 6-9 and followed by 9 digits)
+    if phone is None or phone == 0:
+        return False  # Return False if phone is None or zero
+
+    # Convert to string and strip any unwanted spaces
+    phone_str = str(phone).strip()
+
+    # Regex pattern for valid mobile numbers (starting with 6-9 and followed by 9 digits)
     pattern = r"^[6-9][0-9]{9}$"
+    
     # Use fullmatch to ensure the entire phone number matches the pattern
-    return bool(re.fullmatch(pattern, phone))
+    return bool(re.fullmatch(pattern, phone_str))
 
 
 def get_database_connection():
