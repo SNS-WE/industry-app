@@ -249,7 +249,7 @@ def display_all_details():
         if industries:
             # Create a DataFrame for better visualization
             df = pd.DataFrame(industries, columns=[col[0] for col in c.description])
-            ind_df = df[['state_ocmms_id', 'industry_name', 'industry_category', 'address', 'district',
+            ind_df = df[['state_ocmms_id', 'industry_name', 'industry_category', 'cpcb_ind_code', 'address', 'district',
                          'production_capacity', 'num_stacks', 'industry_environment_head',
                          'concerned_person_cems', 'industry_representative_email', 'ind_id']]
 
@@ -258,8 +258,8 @@ def display_all_details():
             if search_term:
                 ind_df = ind_df[ind_df['industry_name'].str.contains(search_term, case=False, na=False)]
 
-            columns = st.columns([1, 1, 1, 1, 1, 1, 1])  # Column widths for Streamlit layout
-            labels = ["Industry Name", "Category", "State OCMMS Id", "District", "Production Capacity", "No. of Stacks",
+            columns = st.columns([1, 1, 1, 1, 1, 1, 1, 1])  # Column widths for Streamlit layout
+            labels = ["Industry Name", "Category", "State OCMMS Id", "CPCB Industry Code", "District", "Production Capacity", "No. of Stacks",
                       "Actions"]
 
             for col, label in zip(columns, labels):
