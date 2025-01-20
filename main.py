@@ -281,6 +281,8 @@ def display_all_details():
                         st.session_state["selected_ind_id"] = row["ind_id"]
                         st.session_state["selected_state_ocmms_id"] = row["state_ocmms_id"]
                         st.rerun()
+                        
+            st.markdown("<hr>", unsafe_allow_html=True)
 
         else:
             st.warning("No industry details found.")
