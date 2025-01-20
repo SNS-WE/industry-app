@@ -1172,7 +1172,7 @@ def main():
                         production_capacity = st.text_input("Production Capacity")
                         num_stacks = st.number_input("Number of Stacks", min_value=1)
                         industry_environment_head = st.text_input("Environment Department Head")
-                        env_phone = st.number_input("Environment Department Head Phone Number", value=None)
+                        env_phone = st.number_input("Environment Department Head Phone Number", value=None, step=1)
                         industry_instrument_head = st.text_input("Instrumentation Department Head")
                         inst_phone = st.number_input("Instrumentation Department Head Phone Number", value=None)
                         concerned_person_cems = st.text_input("Concerned Person for CEMS")
