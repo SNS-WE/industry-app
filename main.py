@@ -288,7 +288,7 @@ def display_all_details():
 def show_industry_details(ind_id):
     """Show detailed information for the selected industry."""
 
-    st.markdown("<h1 style='text-align: center; color: black;'>Industry Details</h1>", unsafe_allow_html=True)
+    st.markdown("<h3 style='text-align: center; color: black;'>Industry Details</h3>", unsafe_allow_html=True)
 
     def fetch_data(query, params=None):
         """Fetch data from the database."""
