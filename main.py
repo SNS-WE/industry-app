@@ -265,6 +265,7 @@ def display_all_details():
             for col, label in zip(columns, labels):
                 with col:
                     st.markdown(f"**{label}**")
+            st.markdown("<hr>", unsafe_allow_html=True)
 
             for _, row in ind_df.iterrows():
                 cols = st.columns([1, 1, 1, 1, 1, 1, 1])  # Adjust column widths as needed
@@ -282,7 +283,7 @@ def display_all_details():
                         st.session_state["selected_state_ocmms_id"] = row["state_ocmms_id"]
                         st.rerun()
                         
-            st.markdown("<hr>", unsafe_allow_html=True)
+                st.markdown("<hr>", unsafe_allow_html=True)
 
         else:
             st.warning("No industry details found.")
