@@ -240,7 +240,7 @@ def admin_dashboard():
 
 def display_all_details():
     """Display all user-filled industry details with buttons in each row using `st.columns`."""
-    st.subheader("All User-Filled Industry Details")  # Display the heading once at the top
+    # st.subheader("All User-Filled Industry Details")  # Display the heading once at the top
     with get_database_connection() as conn:
         c = conn.cursor()
         c.execute("SELECT * FROM industry")
@@ -326,11 +326,11 @@ def show_industry_details(ind_id):
             "Production Capacity": industry['production_capacity'],
             "Number of stacks": industry['num_stacks'],
             "Environment Department Head": industry['industry_environment_head'],
-            "Phone Number": industry['env_phone'],
+            "Environment Head Phone Number": industry['env_phone'],
             "Instrumentation Department Head": industry['industry_instrument_head'],
-            "Phone Number": industry['inst_phone'],
+            "Instrumentation Head Phone Number": industry['inst_phone'],
             "Concerned Person for CEMS": industry['concerned_person_cems'],
-            "Phone Number": industry['cems_phone'],
+            "Concerned Person for CEMS Phone Number": industry['cems_phone'],
             "Industry Representative Email Id": industry['industry_representative_email'],
         }
         for field, value in industry_details.items():
@@ -538,7 +538,7 @@ def show_industry_dashboard(user_id):
         industry = industry_data.iloc[0]  # Assuming one industry per user
         industry_details = {
             "Industry State OCMMS Code": industry['state_ocmms_id'],
-            "CPCB Industry Code" : industry['cpcb_ind_code'],
+            "CPCB Industry Code": industry['cpcb_ind_code'],
             "Industry Category": industry['industry_category'],
             "Industry Name": industry['industry_name'],
             "Address": industry['address'],
@@ -547,11 +547,11 @@ def show_industry_dashboard(user_id):
             "Production Capacity": industry['production_capacity'],
             "Number of stacks": industry['num_stacks'],
             "Environment Department Head": industry['industry_environment_head'],
-            "Phone Number" : industry['env_phone'],
+            "Environment Head Phone Number": industry['env_phone'],
             "Instrumentation Department Head": industry['industry_instrument_head'],
-            "Phone Number" : industry['inst_phone'],
+            "Instrumentation Head Phone Number": industry['inst_phone'],
             "Concerned Person for CEMS": industry['concerned_person_cems'],
-            "Phone Number" : industry['cems_phone'],
+            "Concerned Person for CEMS Phone Number": industry['cems_phone'],
             "Industry Representative Email Id": industry['industry_representative_email'],
         }
         for field, value in industry_details.items():
