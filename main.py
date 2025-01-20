@@ -1164,11 +1164,11 @@ def main():
                         production_capacity = st.text_input("Production Capacity")
                         num_stacks = st.number_input("Number of Stacks", min_value=1)
                         industry_environment_head = st.text_input("Environment Department Head")
-                        env_phone = st.number_input("ENV Phone Number")
+                        env_phone = st.number_input("Environment Department Head Phone Number")
                         industry_instrument_head = st.text_input("Instrumentation Department Head")
-                        inst_phone = st.number_input("inst Phone Number")
+                        inst_phone = st.number_input("Instrumentation Department Head Phone Number")
                         concerned_person_cems = st.text_input("Concerned Person for CEMS")
-                        cems_phone = st.number_input("cemsPhone Number")
+                        cems_phone = st.number_input("Concerned Person for CEMS Phone Number")
 
                         # Industry Representative Email Id and Password at the end
                         email = st.text_input("Industry Representative Email Id (used for login)")
