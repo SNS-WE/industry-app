@@ -1156,7 +1156,7 @@ def main():
     # # Display the resized image
     # st.image(resized_image, caption="Resized Banner Image")
     
-    st.image("banner.jpg", caption="Banner Image", width=1000)
+    st.image("banner.jpg", caption="Banner Image", width=1500, height=100)
 
     
 
