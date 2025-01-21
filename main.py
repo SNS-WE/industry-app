@@ -1142,19 +1142,14 @@ def main():
     # # Display the custom HTML
     # # st.components.v1.html(custom_html)
     # st.markdown(custom_html, unsafe_allow_html=True)
-    # Open the image
-    # image = Image.open("banner.jpg")
-    
-    # # Set maximum width (e.g., 1000px)
-    # max_width = 1000
-    # width_percent = (max_width / float(image.size[0]))
-    # height_size = int((float(image.size[1]) * float(width_percent)))
-    
-    # # Resize image
-    # resized_image = image.resize((max_width, height_size))
-    
-    # # Display the resized image
-    # st.image(resized_image, caption="Resized Banner Image")
+    custom_html = """
+<div style="text-align: center; margin: auto;">
+    <img src="banner.jpg" alt="Banner Image" style="width: 100%; max-width: 1000px; height: 300px; object-fit: cover;">
+</div>
+"""
+
+# Display the image with HTML
+st.markdown(custom_html, unsafe_allow_html=True)
     
     st.image("banner.jpg", caption="Banner Image", width=1500, height=100)
 
