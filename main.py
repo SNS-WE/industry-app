@@ -1132,16 +1132,11 @@ def main():
     st.markdown(hide_streamlit_style, unsafe_allow_html=True)
     reduce_top_margin_style = """
     <style>
-        /* Adjust the top margin of the sidebar */
-        .css-1lcbmhc.e1fqkh3o3 {  /* Sidebar container */
-            padding-top: 0rem; /* Adjust top margin (default ~1rem) */
-        }
-
-        /* Adjust the left and right margins of the main page */
+        /* Adjust the margins of the main page */
         .block-container {
             padding-top: 2rem;
-            padding-left: 1rem; /* Adjust left margin (default ~2rem) */
-            padding-right: 1rem; /* Adjust right margin (default ~2rem) */
+            padding-left: 1rem; 
+            padding-right: 1rem; 
         }
     </style>
     """
