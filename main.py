@@ -1130,6 +1130,16 @@ def main():
     </style>
     """
     st.markdown(hide_streamlit_style, unsafe_allow_html=True)
+    reduce_top_margin_style = """
+    <style>
+        /* Reduce the top margin of the main content */
+        .block-container {
+            padding-top: 0rem; /* Adjust this value as needed */
+        }
+    </style>
+    """
+    st.markdown(reduce_top_margin_style, unsafe_allow_html=True)
+
 
     # # Custom HTML/CSS for the banner
     # custom_html = """
