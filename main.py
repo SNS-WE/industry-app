@@ -1134,7 +1134,7 @@ def main():
     <style>
         /* Reduce the top margin of the main content */
         .block-container {
-            padding-top: 0rem; /* Adjust this value as needed */
+            padding-top: 2rem; /* Adjust this value as needed */
         }
     </style>
     """
