@@ -5,7 +5,7 @@ import hashlib
 import re
 import time
 import pandas as pd
-from PIL import Image
+
 
 
 # Utility Functions
@@ -1142,11 +1142,6 @@ def main():
     # Display the custom HTML
     st.components.v1.html(custom_html)
     st.markdown(custom_html, unsafe_allow_html=True)
-   
-    
-    # st.image("banner.jpg", caption="Banner Image", width=1500, height=100)
-
-    
 
     st.markdown(f"<h2 style='text-align: center'>Industry Registration Portal</h1>", unsafe_allow_html=True)
 
