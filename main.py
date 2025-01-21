@@ -1163,7 +1163,13 @@ def main():
     # # Display the custom HTML
     # st.components.v1.html(custom_html)
     # # st.markdown(custom_html, unsafe_allow_html=True)
-    st.image("banner3.jpg", caption=None, use_column_width=None, use_container_width=True)
+   # st.image("banner3.jpg", caption=None, use_column_width=None, use_container_width=True)
+    custom_html = """
+    <div style="height: 200px; overflow: hidden; display: flex; justify-content: center; align-items: center;">
+        <img src="banner3.jpg" alt="Banner Image" style="height: 100%; object-fit: cover;">
+    </div>
+    """
+    st.markdown(custom_html, unsafe_allow_html=True)
 
     #st.markdown(f"<h2 style='text-align: center'>Industry Registration Portal</h1>", unsafe_allow_html=True)
 
