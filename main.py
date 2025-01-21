@@ -1142,38 +1142,8 @@ def main():
     """
     st.markdown(reduce_top_margin_style, unsafe_allow_html=True)
 
-
-    # # Custom HTML/CSS for the banner
-    # custom_html = """
-    # <div class="banner">
-    #     <img src="banner.jpg" alt="Banner Image">
-    # </div>
-    # <style>
-    #     .banner {
-    #         width: 160%;
-    #         height: 200px;
-    #         overflow: hidden;
-    #     }
-    #     .banner img {
-    #         width: 100%;
-    #         object-fit: cover;
-    #     }
-    # </style>
-    # """
-    # # Display the custom HTML
-    # st.components.v1.html(custom_html)
-    # # st.markdown(custom_html, unsafe_allow_html=True)
-   # st.image("banner3.jpg", caption=None, use_column_width=None, use_container_width=True)
-    image_path = "banner3.jpg"
-    custom_html = f"""
-    <div style="height: 200px; overflow: hidden; display: flex; justify-content: center; align-items: center;">
-        <img src="{image_path}" alt="Banner Image" style="height: 100%; object-fit: cover;">
-    </div>
-    """
-    st.markdown(custom_html, unsafe_allow_html=True)
-
-    #st.markdown(f"<h2 style='text-align: center'>Industry Registration Portal</h1>", unsafe_allow_html=True)
-
+    st.image("banner3.jpg", caption=None, use_container_width=True)
+    
     # st.title("Industry Registration Portal")
     create_database_tables()
     # add_admin_user() # One time run
