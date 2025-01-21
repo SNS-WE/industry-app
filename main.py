@@ -1142,7 +1142,7 @@ def main():
     # # st.components.v1.html(custom_html)
     # st.markdown(custom_html, unsafe_allow_html=True)
     
-    st.image("banner.jpg", caption="Banner Image", use_column_width=False)
+    st.image("banner.jpg", caption="Banner Image", use_container_width=True)
 
     
 
