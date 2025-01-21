@@ -1144,7 +1144,7 @@ def main():
     # st.markdown(custom_html, unsafe_allow_html=True)
     custom_html = """
     <div style="text-align: center; margin: auto;">
-        <img src="banner.jpg" alt="Banner Image" style="width: 100%; max-width: 1000px; height: 300px; object-fit: cover;">
+        <img src="banner.jpg" alt="Banner Image" style="width: 1000px; max-width: 1000px; height: 300px; object-fit: cover;">
     </div>
     """
 
