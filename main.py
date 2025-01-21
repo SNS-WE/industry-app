@@ -1112,6 +1112,16 @@ def fill_cems_details(user_id):
 
 # Main Function
 def main():
+    hide_streamlit_style = """
+    <style>
+        /* Hide the Streamlit header and hamburger menu */
+        #MainMenu {visibility: hidden;}
+        header {visibility: hidden;}
+        footer {visibility: hidden;}
+    </style>
+"""
+st.markdown(hide_streamlit_style, unsafe_allow_html=True)
+
     """Main application logic."""
     col1, col2, col3, col4, col5 = st.columns([1, 1, 1, 1,1])
     with col1:
