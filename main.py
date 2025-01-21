@@ -1143,15 +1143,15 @@ def main():
     # # st.components.v1.html(custom_html)
     # st.markdown(custom_html, unsafe_allow_html=True)
     custom_html = """
-<div style="text-align: center; margin: auto;">
-    <img src="banner.jpg" alt="Banner Image" style="width: 100%; max-width: 1000px; height: 300px; object-fit: cover;">
-</div>
-"""
+    <div style="text-align: center; margin: auto;">
+        <img src="banner.jpg" alt="Banner Image" style="width: 100%; max-width: 1000px; height: 300px; object-fit: cover;">
+    </div>
+    """
 
-# Display the image with HTML
-st.markdown(custom_html, unsafe_allow_html=True)
+    # Display the image with HTML
+    st.markdown(custom_html, unsafe_allow_html=True)
     
-    st.image("banner.jpg", caption="Banner Image", width=1500, height=100)
+    # st.image("banner.jpg", caption="Banner Image", width=1500, height=100)
 
     
 
