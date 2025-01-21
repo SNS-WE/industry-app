@@ -1144,7 +1144,7 @@ def main():
     # st.markdown(custom_html, unsafe_allow_html=True)
     # Open and resize the image
     image = Image.open("banner.jpg")
-    resized_image = image.resize((500, 300))  # Width: 500px, Height: 300px
+    resized_image = image.resize((100%, 100))  # Width: 500px, Height: 300px
     
     # Display the resized image
     st.image(resized_image, caption="Resized Banner Image")
