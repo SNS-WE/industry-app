@@ -1123,22 +1123,31 @@ def main():
     custom_html = ""
     <div class="banner">
     <img src="banner.jpg" alt="Banner Image">
-     </div>
-    <style>
+    </div>
+<style>
+    .banner {
+        width: 100%;
+        height: 200px;
+        overflow: hidden;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+    .banner img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+    @media (max-width: 768px) {
         .banner {
-            width: 160%;
-            height: 200px;
-            overflow: hidden;
+            height: 150px;
         }
-        .banner img {
-            width: 100%;
-            object-fit: cover;
-        }
-    </style>
+    }
+</style>
 """
 
 # Display the custom HTML
-st.markdown(custom_html, unsafe_allow_html=True)
+    st.markdown(custom_html, unsafe_allow_html=True)
 
 
     # # Custom HTML/CSS for the banner
