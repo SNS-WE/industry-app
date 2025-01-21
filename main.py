@@ -1122,6 +1122,25 @@ def main():
         st.image("CEEW.png")  # Display logo
 
     st.markdown(f"<h1 style='text-align: center'>Industry Registration Portal</h1>", unsafe_allow_html=True)
+    # Custom HTML/CSS for the banner
+custom_html = """
+<div class="banner">
+    <img src="CEEW.png" alt="Banner Image">
+</div>
+<style>
+    .banner {
+        width: 160%;
+        height: 200px;
+        overflow: hidden;
+    }
+    .banner img {
+        width: 100%;
+        object-fit: cover;
+    }
+</style>
+"""
+# Display the custom HTML
+st.components.v1.html(custom_html)
 
     # st.title("Industry Registration Portal")
     create_database_tables()
