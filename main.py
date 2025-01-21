@@ -1141,7 +1141,32 @@ def main():
     # # Display the custom HTML
     # # st.components.v1.html(custom_html)
     # st.markdown(custom_html, unsafe_allow_html=True)
-    st.image("banner.jpg", caption="Banner Image", use_column_width=True)
+    # st.image("banner.jpg", caption="Banner Image", use_column_width=True)
+    custom_html = """
+<div class="banner">
+    <img src="banner.jpg" alt="Banner Image">
+</div>
+<style>
+    .banner {
+        width: 100%; /* Auto-adjust to the container width */
+        height: 300px; /* Fixed height */
+        overflow: hidden;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin: auto; /* Center the banner horizontally */
+    }
+    .banner img {
+        width: 100%; /* Auto-adjust width to fill the container */
+        height: 100%; /* Ensures the image height matches the container height */
+        object-fit: cover; /* Makes sure the image fills the space without distortion */
+    }
+</style>
+"""
+
+# Display the custom HTML in Streamlit
+st.markdown(custom_html, unsafe_allow_html=True)
+    
 
     st.markdown(f"<h2 style='text-align: center'>Industry Registration Portal</h1>", unsafe_allow_html=True)
 
