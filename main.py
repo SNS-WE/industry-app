@@ -5,6 +5,7 @@ import hashlib
 import re
 import time
 import pandas as pd
+from PIL import Image
 
 
 # Utility Functions
@@ -1141,8 +1142,13 @@ def main():
     # # Display the custom HTML
     # # st.components.v1.html(custom_html)
     # st.markdown(custom_html, unsafe_allow_html=True)
+    # Open and resize the image
+    image = Image.open("banner.jpg")
+    resized_image = image.resize((500, 300))  # Width: 500px, Height: 300px
     
-    st.image("banner.jpg", caption="Banner Image", use_container_width=True)
+    # Display the resized image
+    st.image(resized_image, caption="Resized Banner Image")
+    # st.image("banner.jpg", caption="Banner Image", use_container_width=True)
 
     
 
