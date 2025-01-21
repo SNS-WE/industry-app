@@ -1123,27 +1123,18 @@ def main():
     custom_html = ""
     <div class="banner">
     <img src="banner.jpg" alt="Banner Image">
-    </div>
+     </div>
     <style>
         .banner {
-            width: 100%;
+            width: 160%;
             height: 200px;
             overflow: hidden;
-            display: flex;
-            justify-content: center;
-            align-items: center;
         }
         .banner img {
             width: 100%;
-            height: 100%;
             object-fit: cover;
         }
-        @media (max-width: 768px) {
-        .banner {
-            height: 150px;
-        }
-    }
-</style>
+    </style>
 """
 
 # Display the custom HTML
