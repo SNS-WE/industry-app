@@ -1124,7 +1124,7 @@ def main():
     # Custom HTML/CSS for the banner
     custom_html = """
     <div class="banner">
-        <img src="A4 Revised Poster(1).jpg" alt="Banner Image">
+        <img src="banner.jpg" alt="Banner Image">
     </div>
     <style>
         .banner {
