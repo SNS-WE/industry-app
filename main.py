@@ -1120,55 +1120,28 @@ def main():
         st.image("bspcb.png")  # Display logo
     with col5:
         st.image("CEEW.png")  # Display logo
-    custom_html = ""
-    <div class="banner">
-    <img src="banner.jpg" alt="Banner Image">
-    </div>
-<style>
-    .banner {
-        width: 100%;
-        height: 200px;
-        overflow: hidden;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-    }
-    .banner img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-    }
-    @media (max-width: 768px) {
-        .banner {
-            height: 150px;
-        }
-    }
-</style>
-"""
 
-# Display the custom HTML
+    # Custom HTML/CSS for the banner
+    custom_html = """
+    <div class="banner">
+        <img src="banner.jpg" alt="Banner Image">
+    </div>
+    <style>
+        .banner {
+            width: 160%;
+            height: 200px;
+            overflow: hidden;
+        }
+        .banner img {
+            width: 100%;
+            object-fit: cover;
+        }
+    </style>
+    """
+    # Display the custom HTML
+    # st.components.v1.html(custom_html)
     st.markdown(custom_html, unsafe_allow_html=True)
 
-
-    # # Custom HTML/CSS for the banner
-    # custom_html = """
-    # <div class="banner">
-    #     <img src="banner.jpg" alt="Banner Image">
-    # </div>
-    # <style>
-    #     .banner {
-    #         width: 160%;
-    #         height: 200px;
-    #         overflow: hidden;
-    #     }
-    #     .banner img {
-    #         width: 100%;
-    #         object-fit: cover;
-    #     }
-    # </style>
-    # """
-    # # Display the custom HTML
-    # st.components.v1.html(custom_html)
     st.markdown(f"<h2 style='text-align: center'>Industry Registration Portal</h1>", unsafe_allow_html=True)
 
     # st.title("Industry Registration Portal")
