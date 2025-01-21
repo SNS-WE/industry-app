@@ -1121,6 +1121,25 @@ def main():
     with col5:
         st.image("CEEW.png")  # Display logo
 
+    # Custom HTML/CSS for the banner
+    custom_html = """
+    <div class="banner">
+        <img src="A4 Revised Poster(1).jpg" alt="Banner Image">
+    </div>
+    <style>
+        .banner {
+            width: 160%;
+            height: 200px;
+            overflow: hidden;
+        }
+        .banner img {
+            width: 100%;
+            object-fit: cover;
+        }
+    </style>
+    """
+    # Display the custom HTML
+    st.components.v1.html(custom_html)
     st.markdown(f"<h2 style='text-align: center'>Industry Registration Portal</h1>", unsafe_allow_html=True)
 
     # st.title("Industry Registration Portal")
