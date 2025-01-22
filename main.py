@@ -1121,28 +1121,28 @@ def main():
     with col5:
         st.image("CEEW.png")  # Display logo
     
-    # hide_streamlit_style = """
-    # <style>
-    #     /* Hide the Streamlit header and hamburger menu */
-    #     #MainMenu {visibility: hidden;}
-    #     header {visibility: hidden;}
-    #     footer {visibility: hidden;}
-    # </style>
-    # """
-    # st.markdown(hide_streamlit_style, unsafe_allow_html=True)
-    # reduce_top_margin_style = """
-    # <style>
-    #     /* Adjust the margins of the main page */
-    #     .block-container {
-    #         padding-top: 2rem;
-    #         padding-left: 1rem; 
-    #         padding-right: 1rem; 
-    #     }
-    # </style>
-    # """
-    # st.markdown(reduce_top_margin_style, unsafe_allow_html=True)
+    hide_streamlit_style = """
+    <style>
+        /* Hide the Streamlit header and hamburger menu */
+        #MainMenu {visibility: hidden;}
+        header {visibility: hidden;}
+        footer {visibility: hidden;}
+    </style>
+    """
+    st.markdown(hide_streamlit_style, unsafe_allow_html=True)
+    reduce_top_margin_style = """
+    <style>
+        /* Adjust the margins of the main page */
+        .block-container {
+            padding-top: 2rem;
+            padding-left: 1rem; 
+            padding-right: 1rem; 
+        }
+    </style>
+    """
+    st.markdown(reduce_top_margin_style, unsafe_allow_html=True)
 
-    # st.image("banner3.jpg", caption=None, use_container_width=True)
+    st.image("banner3.jpg", caption=None, use_container_width=True)
     
     # st.title("Industry Registration Portal")
     create_database_tables()
