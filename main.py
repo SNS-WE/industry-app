@@ -942,9 +942,9 @@ def fill_cems_details(user_id):
         c.execute("SELECT stack_id, process_attached, parameters FROM stacks WHERE user_id = ?", (user_id,))
         stack_details = c.fetchall()
 
-        st.write(stack_details)
-        x = stack_details[0][0]
-        st.write(x)
+        # st.write(stack_details)
+        # x = stack_details[0][0]
+        # st.write(x)
 
     if not stack_details:
         st.error("No stack details found. Please fill in stack details first.")
