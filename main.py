@@ -1113,13 +1113,13 @@ def fill_cems_details(user_id):
 # Main Function
 def main():
     """Main application logic."""
-    col1, col2, col3, col4, col5 = st.columns([1, 1, 1, 1,1])
+    col1, col2, col3, col4, col5 = st.columns([1, 1, 1])
     with col1:
         st.image("bspcb.png")  # Display logo
-    with col3:
+    with col2:
         #st.header("Industry Registration Portal")
         st.markdown("<h3 style='text-align: center; color: black;'>Industry Registration Portal</h3>", unsafe_allow_html=True)# Display logo
-    with col5:
+    with col3:
         st.image("CEEW.png")  # Display logo
     
     hide_streamlit_style = """
