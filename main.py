@@ -1114,11 +1114,11 @@ def fill_cems_details(user_id):
 def main():
     """Main application logic."""
     col1, col2, col3, col4, col5 = st.columns([1, 1, 1, 1, 1])
-    with col1:
+    with col2:
         st.image("bspcb.png")  # Display logo
-    with col3:
-        st.markdown("<h4 style='text-align: center; color: black;'>Industry Registration Portal</h4>", unsafe_allow_html=True)# Display logo
-    with col5:
+    # with col3:
+    #     st.markdown("<h4 style='text-align: center; color: black;'>Industry Registration Portal</h4>", unsafe_allow_html=True)# Display logo
+    with col4:
         st.image("CEEW.png")  # Display logo
     
     hide_streamlit_style = """
@@ -1144,7 +1144,7 @@ def main():
 
     #st.image("banner3.jpg", caption=None, use_container_width=True)
     
-    #st.title("Industry Registration Portal")
+    st.title("Industry Registration Portal")
     create_database_tables()
     # add_admin_user() # One time run
 
