@@ -1145,7 +1145,7 @@ def main():
     #st.image("banner3.jpg", caption=None, use_container_width=True)
     
     # st.title("Industry Registration Portal")
-    st.markdown("<h4 style='text-align: center; color: black;'>Industry Registration Portal</h4>", unsafe_allow_html=True)
+    st.markdown("<h3 style='text-align: center; color: black;'>Industry Registration Portal</h3>", unsafe_allow_html=True)
     create_database_tables()
     # add_admin_user() # One time run
 
