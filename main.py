@@ -1117,7 +1117,7 @@ def main():
     with col1:
         st.image("bspcb.png")  # Display logo
     with col3:
-        st.title("Industry Registration Portal")  # Display logo
+        st.header("Industry Registration Portal")  # Display logo
     with col5:
         st.image("CEEW.png")  # Display logo
     
@@ -1144,7 +1144,7 @@ def main():
 
     #st.image("banner3.jpg", caption=None, use_container_width=True)
     
-    st.title("Industry Registration Portal")
+    #st.title("Industry Registration Portal")
     create_database_tables()
     # add_admin_user() # One time run
 
