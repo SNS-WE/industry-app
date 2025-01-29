@@ -169,7 +169,7 @@ def refresh_page():
         """, unsafe_allow_html=True)
 
 
-st.set_page_config(layout="wide")
+# st.set_page_config(layout="wide")
 
 
 def sidebar_forms(user_id):
