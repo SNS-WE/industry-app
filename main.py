@@ -1116,8 +1116,8 @@ def main():
     col1, col2, col3, col4, col5 = st.columns([1, 1, 1, 1, 1])
     with col1:
         st.image("bspcb.png")  # Display logo
-    with col2:
-        st.markdown("<h3 style='text-align: center; color: black;'>Industry Registration Portal</h3>", unsafe_allow_html=True)# Display logo
+    with col3:
+        st.markdown("<h4 style='text-align: center; color: black;'>Industry Registration Portal</h4>", unsafe_allow_html=True)# Display logo
     with col5:
         st.image("CEEW.png")  # Display logo
     
