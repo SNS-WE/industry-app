@@ -1144,7 +1144,7 @@ def main():
 
     #st.image("banner3.jpg", caption=None, use_container_width=True)
     
-    # st.title("Industry Registration Portal")
+    st.title("Industry Registration Portal")
     create_database_tables()
     # add_admin_user() # One time run
 
