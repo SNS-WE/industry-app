@@ -1117,7 +1117,8 @@ def main():
     with col1:
         st.image("bspcb.png")  # Display logo
     with col3:
-        st.header("Industry Registration Portal")  # Display logo
+        #st.header("Industry Registration Portal")
+        st.markdown("<h3 style='text-align: center; color: black;'>Industry Registration Portal</h3>", unsafe_allow_html=True)# Display logo
     with col5:
         st.image("CEEW.png")  # Display logo
     
