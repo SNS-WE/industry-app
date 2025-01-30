@@ -176,6 +176,11 @@ def sidebar_forms(user_id):
     """Function to render the sidebar after login."""
     st.sidebar.title("Navigation")
 
+     # Ensure the correct page loads even if sidebar is not clicked
+    if st.session_state.get("current_page") == "Industry Dashboard":
+        show_industry_dashboard(user_id)
+        return  # Prevent sidebar from re-rendering unnecessarily
+
     # Conditional rendering of sidebar options based on login status
     if st.session_state.get("logged_in", False):
         menu = ["Industry Dashboard", "Stack Details", "CEMS Details", "Logout"]
@@ -185,9 +190,7 @@ def sidebar_forms(user_id):
     choice = st.sidebar.selectbox("Select an option", menu)
 
     # Ensure correct redirection
-    if st.session_state.get("current_page") == "Industry Dashboard":
-        show_industry_dashboard(user_id)
-    elif choice == "Industry Dashboard":
+    if choice == "Industry Dashboard":
         show_industry_dashboard(user_id)
     elif choice == "Stack Details":
         fill_stacks(user_id)
