@@ -1100,8 +1100,9 @@ def fill_cems_details(user_id):
                 st.session_state[f"form_reset_{selected_stack_id}"] = True  # Allow form reset
 
             st.success(f"CEMS details for {selected_parameter} saved!")
-            st.session_state[
-                f"cems_{selected_stack_id}_{selected_parameter}"] = True  # Mark CEMS form as completed for this parameter
+            # st.session_state[
+            #     f"cems_{selected_stack_id}_{selected_parameter}"] = True  # Mark CEMS form as completed for this parameter
+            st.session_state["current_page"] = "Industry Dashboard"
 
             st.rerun()
 
