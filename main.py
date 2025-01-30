@@ -1327,6 +1327,15 @@ def main():
     elif st.session_state["logged_in"]:
         user_id = st.session_state["user_id"]
         sidebar_forms(user_id)
+         # Ensure correct redirection to the selected page
+        if st.session_state.get("current_page") == "Industry Dashboard":
+            show_industry_dashboard(user_id)
+        elif st.session_state.get("current_page") == "Stack Details":
+            fill_stacks(user_id)
+        elif st.session_state.get("current_page") == "CEMS Details":
+            fill_cems_details(user_id)
+
+
 
         # else:
         #     user_id = st.session_state["user_id"]
