@@ -176,10 +176,10 @@ def sidebar_forms(user_id):
     """Function to render the sidebar after login."""
     st.sidebar.title("Navigation")
 
-     # Ensure the correct page loads even if sidebar is not clicked
-    if st.session_state.get("current_page") == "Industry Dashboard":
-        show_industry_dashboard(user_id)
-        return  # Prevent sidebar from re-rendering unnecessarily
+    #  # Ensure the correct page loads even if sidebar is not clicked
+    # if st.session_state.get("current_page") == "Industry Dashboard":
+    #     show_industry_dashboard(user_id)
+    #     return  # Prevent sidebar from re-rendering unnecessarily
 
     # Conditional rendering of sidebar options based on login status
     if st.session_state.get("logged_in", False):
@@ -1108,7 +1108,7 @@ def fill_cems_details(user_id):
             st.success(f"CEMS details for {selected_parameter} saved!")
             # st.session_state[
             #     f"cems_{selected_stack_id}_{selected_parameter}"] = True  # Mark CEMS form as completed for this parameter
-            st.session_state["current_page"] = "Industry Dashboard"
+            # st.session_state["current_page"] = "Industry Dashboard"
 
             st.rerun()
 
@@ -1327,13 +1327,13 @@ def main():
     elif st.session_state["logged_in"]:
         user_id = st.session_state["user_id"]
         sidebar_forms(user_id)
-         # Ensure correct redirection to the selected page
-        if st.session_state.get("current_page") == "Industry Dashboard":
-            show_industry_dashboard(user_id)
-        elif st.session_state.get("current_page") == "Stack Details":
-            fill_stacks(user_id)
-        elif st.session_state.get("current_page") == "CEMS Details":
-            fill_cems_details(user_id)
+        #  # Ensure correct redirection to the selected page
+        # if st.session_state.get("current_page") == "Industry Dashboard":
+        #     show_industry_dashboard(user_id)
+        # elif st.session_state.get("current_page") == "Stack Details":
+        #     fill_stacks(user_id)
+        # elif st.session_state.get("current_page") == "CEMS Details":
+        #     fill_cems_details(user_id)
 
 
 
