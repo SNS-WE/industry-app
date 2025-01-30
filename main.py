@@ -184,7 +184,10 @@ def sidebar_forms(user_id):
 
     choice = st.sidebar.selectbox("Select an option", menu)
 
-    if choice == "Industry Dashboard":
+    # Ensure correct redirection
+    if st.session_state.get("current_page") == "Industry Dashboard":
+        show_industry_dashboard(user_id)
+    elif choice == "Industry Dashboard":
         show_industry_dashboard(user_id)
     elif choice == "Stack Details":
         fill_stacks(user_id)
