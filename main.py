@@ -1142,22 +1142,6 @@ def main():
     """
     st.markdown(reduce_top_margin_style, unsafe_allow_html=True)
 
-    hide_streamlit_style = """
-        <style>
-        /* Hide the 'Manage app' section */
-            [data-testid="stDecoration"] {
-            display: none;
-            }
-
-        /* Optionally, hide the footer or other default elements */
-            footer {
-            visibility: hidden;
-            }
-        </style>
-    """
-    st.markdown(hide_streamlit_style, unsafe_allow_html=True)
-
-
     #st.image("banner3.jpg", caption=None, use_container_width=True)
     
     # st.title("Industry Registration Portal")
